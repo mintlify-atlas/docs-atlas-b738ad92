@@ -1,0 +1,72 @@
+{
+  "projectType": "ai-ml",
+  "projectName": "Guías IA - Clasificación de Neumonía",
+  "projectDescription": "Guías educativas completas para desarrollar un clasificador de neumonía usando CNNs y rayos X de tórax",
+  "theme": "palm",
+  "primaryColor": "#46bde6",
+  "lightColor": "#a4e0f1",
+  "darkColor": "#80cee3",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Introducción",
+        "pages": [
+          "introduction",
+          "quick-start"
+        ]
+      },
+      {
+        "group": "Fundamentos del Proyecto",
+        "pages": [
+          "fundamentals/problem-statement",
+          "fundamentals/model-design",
+          "fundamentals/dataset-guide"
+        ]
+      },
+      {
+        "group": "Guías de Implementación",
+        "pages": [
+          "guides/complete-guide",
+          "guides/project-structure",
+          "guides/training-evaluation"
+        ]
+      },
+      {
+        "group": "Presentación y Exposición",
+        "pages": [
+          "presentation/presenter-guide",
+          "presentation/key-results",
+          "presentation/faq"
+        ]
+      },
+      {
+        "group": "Recursos Técnicos",
+        "pages": [
+          "resources/cnn-architecture",
+          "resources/data-preprocessing",
+          "resources/metrics-interpretation"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Guía completa paso a paso para clasificación de neumonía con CNN",
+    "Arquitectura CNN de 3 capas convolucionales con justificación técnica",
+    "Dataset de 5,863 rayos X de tórax con instrucciones de descarga",
+    "Métricas esperadas: 80-85% accuracy, 93% AUC-ROC, 96% sensibilidad",
+    "Material de presentación con resumen ejecutivo para expositores",
+    "Código modular con scripts de entrenamiento y evaluación",
+    "Estrategias de regularización: Dropout, Data Augmentation, Early Stopping"
+  ],
+  "publicApiSurface": [
+    "Guía PLANTEAMIENTO.md - Definición del problema biomédico",
+    "Guía DISEÑO_MODELO.md - Arquitectura CNN y justificación técnica",
+    "Guía INSTRUCCIONES_DATASET.md - Obtención del dataset de Kaggle",
+    "Guía GUIA_COMPLETA.md - Pasos 1-4 del proyecto completo",
+    "Guía RESUMEN_PARA_EXPOSITOR.md - Material para presentaciones",
+    "Script main.py - Entrenamiento y evaluación del modelo",
+    "Módulo src/model.py - Arquitectura CNN implementada",
+    "Módulo src/train.py - Pipeline de entrenamiento",
+    "Módulo src/evaluate.py - Evaluación y métricas"
+  ]
+}
