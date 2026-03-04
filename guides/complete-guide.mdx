@@ -1,0 +1,487 @@
+---
+title: Guía Completa de Implementación
+description: Recorrido completo de los pasos 1-4 del proyecto de clasificación de neumonía con IA
+---
+
+Esta guía te llevará a través de todo el proceso de implementación del proyecto de clasificación de neumonía, desde la definición del problema hasta la ejecución del código.
+
+## Resumen Ejecutivo
+
+Este proyecto cubre los siguientes pasos:
+
+<CardGroup cols={2}>
+  <Card title="Paso 1" icon="bullseye">
+    Problema definido: Clasificación de neumonía en rayos X
+  </Card>
+  <Card title="Paso 2" icon="diagram-project">
+    Modelo diseñado: CNN de 3 capas convolucionales
+  </Card>
+  <Card title="Paso 3" icon="database">
+    Dataset identificado: Kaggle Chest X-Ray
+  </Card>
+  <Card title="Paso 4" icon="code">
+    Código implementado: TensorFlow/Keras
+  </Card>
+</CardGroup>
+
+---
+
+## Paso 1: Definición del Problema
+
+### Problema Biomédico
+
+**Detección automática de neumonía en radiografías de tórax usando Deep Learning**
+
+### Justificación
+
+<AccordionGroup>
+  <Accordion title="Impacto Clínico">
+    - La neumonía causa el 15% de muertes en niños menores de 5 años
+    - Es una de las principales causas de mortalidad infantil a nivel mundial
+  </Accordion>
+  
+  <Accordion title="Desafío del Diagnóstico">
+    - El diagnóstico requiere radiólogos expertos no siempre disponibles
+    - Puede haber variabilidad entre observadores
+    - Tiempo de espera para interpretación en zonas rurales
+  </Accordion>
+  
+  <Accordion title="Solución con IA">
+    - IA puede ofrecer screening rápido y consistente
+    - Disponible 24/7 sin fatiga
+    - Apoyo a decisión médica en áreas con recursos limitados
+  </Accordion>
+</AccordionGroup>
+
+### Archivos Relacionados
+
+- `PLANTEAMIENTO.md` - Descripción completa del problema
+
+---
+
+## Paso 2: Diseño del Modelo
+
+### Arquitectura CNN Seleccionada
+
+La arquitectura implementada consta de 3 bloques convolucionales seguidos de capas densas:
+
+```python
+INPUT (224×224×3)
+    ↓
+Conv2D (32 filtros, 3×3, ReLU)
+    ↓
+MaxPooling (2×2)
+    ↓
+Conv2D (64 filtros, 3×3, ReLU)
+    ↓
+MaxPooling (2×2)
+    ↓
+Conv2D (128 filtros, 3×3, ReLU)
+    ↓
+MaxPooling (2×2)
+    ↓
+Flatten
+    ↓
+Dense (128, ReLU)
+    ↓
+Dropout (0.5)
+    ↓
+Dense (2, Softmax)
+    ↓
+[NORMAL, PNEUMONIA]
+```
+
+### Justificación de CNN
+
+<CardGroup cols={2}>
+  <Card title="Información Espacial" icon="grid">
+    Mantiene información espacial 2D de las imágenes
+  </Card>
+  <Card title="Extracción Automática" icon="wand-magic-sparkles">
+    Extrae características automáticamente sin ingeniería manual
+  </Card>
+  <Card title="Probada en Medicina" icon="hospital">
+    Arquitectura probada exitosamente en imagenología médica
+  </Card>
+  <Card title="Eficiencia" icon="bolt">
+    Menos parámetros que MLP tradicionales
+  </Card>
+</CardGroup>
+
+### Hiperparámetros
+
+| Componente | Valor | Descripción |
+|------------|-------|-------------|
+| **Optimizador** | Adam | Learning rate = 0.001 |
+| **Loss** | Categorical Crossentropy | Para clasificación binaria |
+| **Regularización** | Dropout 0.5 + Data Augmentation | Prevención de overfitting |
+| **Métricas** | Accuracy, Precision, Recall, F1 | Evaluación completa |
+
+### Ver el Modelo
+
+Puedes visualizar un resumen del modelo ejecutando:
+
+```bash
+pipenv run python src/model.py
+```
+
+### Archivos Relacionados
+
+- `DISEÑO_MODELO.md` - Justificación completa del diseño
+- `src/model.py` - Implementación del modelo en src/model.py:1
+
+---
+
+## Paso 3: Dataset
+
+### Dataset Seleccionado
+
+**Chest X-Ray Images (Pneumonia) - Kaggle**
+
+<Info>
+  Este dataset contiene radiografías de tórax de pacientes pediátricos organizadas en categorías NORMAL y PNEUMONIA.
+</Info>
+
+### Estadísticas del Dataset
+
+<CodeGroup>
+```text Total
+5,863 imágenes
+~1.15 GB
+```
+
+```text Train
+5,216 imágenes
+- 1,341 NORMAL
+- 3,875 PNEUMONIA
+```
+
+```text Test
+624 imágenes
+- 234 NORMAL
+- 390 PNEUMONIA
+```
+</CodeGroup>
+
+### Cómo Obtener el Dataset
+
+<Steps>
+  <Step title="Ir a Kaggle">
+    Visita: [https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)
+  </Step>
+  
+  <Step title="Descargar el archivo">
+    Descarga el archivo `archive.zip` (requiere cuenta de Kaggle)
+  </Step>
+  
+  <Step title="Extraer en el proyecto">
+    Extrae el contenido en la carpeta `data/chest_xray/` del proyecto
+    
+    Estructura esperada:
+    ```
+    data/chest_xray/
+    ├── train/
+    │   ├── NORMAL/
+    │   └── PNEUMONIA/
+    └── test/
+        ├── NORMAL/
+        └── PNEUMONIA/
+    ```
+  </Step>
+  
+  <Step title="Verificar la instalación">
+    Ejecuta el script de verificación:
+    ```bash
+    pipenv run python verificar_dataset.py
+    ```
+    
+    Deberías ver:
+    ```
+    ✓ Dataset encontrado
+    ✓ Train: 5,216 imágenes
+    ✓ Test: 624 imágenes
+    ```
+  </Step>
+</Steps>
+
+### Archivos Relacionados
+
+- `INSTRUCCIONES_DATASET.md` - Guía completa de descarga
+- `verificar_dataset.py` - Script de verificación
+- `src/data_loader.py` - Cargador de datos con augmentation en src/data_loader.py:1
+
+---
+
+## Paso 4: Implementación
+
+### Scripts Implementados
+
+El proyecto incluye 4 scripts principales en la carpeta `src/`:
+
+<Tabs>
+  <Tab title="model.py">
+    **Arquitectura CNN**
+    
+    Define la arquitectura de la red neuronal convolucional con 3 bloques convolucionales.
+    
+    ```bash
+    pipenv run python src/model.py
+    ```
+    
+    **Output**: Muestra un resumen del modelo con el número de parámetros
+  </Tab>
+  
+  <Tab title="data_loader.py">
+    **Cargador de Datos**
+    
+    Carga las imágenes y aplica data augmentation para mejorar la generalización:
+    - Rotación aleatoria
+    - Desplazamiento horizontal/vertical
+    - Zoom aleatorio
+    - Flip horizontal
+  </Tab>
+  
+  <Tab title="train.py">
+    **Entrenamiento**
+    
+    Entrena el modelo con early stopping y callbacks.
+    
+    ```bash
+    pipenv run python src/train.py
+    ```
+    
+    **Genera**:
+    - `models/best_model.keras` - Mejor modelo según validación
+    - `models/final_model.keras` - Modelo al final del entrenamiento
+    - `results/training_history.png` - Gráficas de pérdida y accuracy
+    
+    **Tiempo estimado**: 15-30 min en CPU, 5-10 min en GPU
+  </Tab>
+  
+  <Tab title="evaluate.py">
+    **Evaluación**
+    
+    Evalúa el modelo en el conjunto de test con métricas completas.
+    
+    ```bash
+    pipenv run python src/evaluate.py
+    ```
+    
+    **Genera**:
+    - `results/confusion_matrix.png` - Matriz de confusión
+    - `results/roc_curve.png` - Curva ROC con AUC
+    - `results/predictions.png` - Ejemplos de predicciones
+  </Tab>
+</Tabs>
+
+---
+
+## Ejecución Completa del Proyecto
+
+<Steps>
+  <Step title="Instalar dependencias">
+    Las librerías ya están configuradas en el Pipfile:
+    
+    ```bash
+    pipenv install
+    ```
+    
+    Esto instalará:
+    - TensorFlow/Keras
+    - NumPy
+    - Matplotlib
+    - scikit-learn
+    - Pillow
+  </Step>
+  
+  <Step title="Descargar dataset">
+    Sigue las instrucciones del Paso 3 para descargar y verificar el dataset.
+  </Step>
+  
+  <Step title="Entrenar el modelo">
+    ```bash
+    pipenv run python src/train.py
+    ```
+    
+    El entrenamiento ejecutará:
+    - **20 épocas** (puede detenerse antes con early stopping)
+    - **Batch size**: 32
+    - **Validación**: 20% del conjunto de entrenamiento
+    
+    <Tip>
+      El proceso se detendrá automáticamente si no hay mejora en 5 épocas consecutivas.
+    </Tip>
+  </Step>
+  
+  <Step title="Evaluar el modelo">
+    ```bash
+    pipenv run python src/evaluate.py
+    ```
+    
+    Esto generará todas las métricas y visualizaciones en la carpeta `results/`.
+  </Step>
+  
+  <Step title="Revisar resultados">
+    Los resultados estarán disponibles en `results/`:
+    - `training_history.png` - Evolución del entrenamiento
+    - `confusion_matrix.png` - Matriz de confusión
+    - `roc_curve.png` - Curva ROC y AUC
+    - `predictions.png` - Ejemplos visuales de predicciones
+  </Step>
+</Steps>
+
+---
+
+## Resultados Esperados
+
+### Métricas Objetivo
+
+<CardGroup cols={2}>
+  <Card title="Accuracy" icon="bullseye">
+    **> 85%**
+    
+    Precisión general del modelo
+  </Card>
+  <Card title="Precision" icon="crosshairs">
+    **> 80%**
+    
+    De las predicciones de neumonía, cuántas son correctas
+  </Card>
+  <Card title="Recall" icon="magnifying-glass">
+    **> 90%**
+    
+    De todos los casos de neumonía, cuántos detecta el modelo
+  </Card>
+  <Card title="F1-Score" icon="balance-scale">
+    **> 85%**
+    
+    Media armónica entre precision y recall
+  </Card>
+</CardGroup>
+
+### AUC-ROC
+
+<Info>
+  **Objetivo**: > 0.90
+  
+  El área bajo la curva ROC mide la capacidad del modelo para discriminar entre clases.
+</Info>
+
+### Interpretación Clínica
+
+- **Alta Recall (&gt;90%)**: Minimiza falsos negativos - es crucial no perder casos de neumonía
+- **Buena Precision (&gt;80%)**: Evita alarmas falsas que generan procedimientos innecesarios
+- **Balance**: El modelo funciona como herramienta útil de screening, no como diagnóstico definitivo
+
+<Warning>
+  Este modelo está diseñado para **apoyo a la decisión médica**, no para reemplazar el diagnóstico de un profesional de la salud.
+</Warning>
+
+---
+
+## Solución de Problemas
+
+<AccordionGroup>
+  <Accordion title="Dataset no encontrado">
+    **Error**:
+    ```
+    FileNotFoundError: data/chest_xray/
+    ```
+    
+    **Solución**:
+    1. Verifica que descargaste el dataset de Kaggle
+    2. Extrae el archivo en la carpeta `data/`
+    3. Ejecuta `pipenv run python verificar_dataset.py`
+  </Accordion>
+  
+  <Accordion title="Memoria insuficiente">
+    **Error**:
+    ```
+    ResourceExhaustedError: OOM when allocating tensor
+    ```
+    
+    **Solución**:
+    - Reduce el `batch_size` en `src/train.py` de 32 a 16 u 8
+    - Busca la línea: `batch_size=32` y cámbiala a `batch_size=16`
+  </Accordion>
+  
+  <Accordion title="TensorFlow muy lento">
+    **Situación**: El entrenamiento toma más de 1 hora
+    
+    **Solución**:
+    - Es normal en CPU
+    - Para acelerar:
+      - Usa una GPU si está disponible
+      - Reduce el número de épocas
+      - Reduce el tamaño del dataset de entrenamiento
+  </Accordion>
+  
+  <Accordion title="Dependencias faltantes">
+    **Error**: Módulos no encontrados
+    
+    **Solución**:
+    ```bash
+    pipenv install tensorflow keras numpy matplotlib scikit-learn pillow
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Próximos Pasos
+
+Después de completar los pasos 1-4, puedes:
+
+### Paso 5: Informe Técnico (6 páginas máx)
+
+Estructura sugerida:
+1. **Abstract** - Resumen del proyecto
+2. **Introducción** - Problema y motivación
+3. **Metodología** - Arquitectura CNN y dataset
+4. **Resultados** - Métricas y gráficas
+5. **Discusión** - Interpretación y limitaciones
+6. **Conclusiones** - Logros y trabajo futuro
+
+### Paso 6: Presentación (7 minutos)
+
+Diapositivas sugeridas:
+1. Título y equipo
+2. Problema biomédico
+3. Dataset y preprocesamiento
+4. Arquitectura CNN
+5. Resultados (métricas + gráficas)
+6. Demostración (predicciones)
+7. Conclusiones
+
+---
+
+## Recursos Adicionales
+
+### Tutoriales
+- [TensorFlow Tutorials](https://www.tensorflow.org/tutorials)
+- [Keras CNN Examples](https://keras.io/examples/vision/)
+
+### Papers Relacionados
+- CheXNet (Rajpurkar et al., 2017)
+- Dataset original (Kermany et al., 2018)
+
+### Mejoras Posibles
+- Transfer Learning (VGG16, ResNet)
+- Grad-CAM para visualización de activaciones
+- Clasificación multiclase (viral vs bacteriana)
+- Ensembles de modelos
+
+---
+
+## Checklist Final
+
+Antes de la entrega, verifica:
+
+- [ ] Dataset descargado y verificado
+- [ ] Modelo entrenado exitosamente
+- [ ] Accuracy &gt;80% en test
+- [ ] Todas las gráficas generadas en `results/`
+- [ ] Código documentado
+- [ ] README.md actualizado
+- [ ] Informe técnico completo (Paso 5)
+- [ ] Presentación lista (Paso 6)

@@ -1,0 +1,175 @@
+---
+title: Problem Statement
+description: Understanding the biomedical challenge and why AI is essential for pneumonia detection
+---
+
+## The Biomedical Problem
+
+This project addresses **automatic pneumonia detection in chest X-rays using convolutional neural networks (CNNs)**.
+
+Pneumonia is an acute respiratory infection affecting the lungs and remains one of the leading causes of mortality in children under 5 years old worldwide.
+
+<Warning>
+According to the WHO:
+- Pneumonia causes **15% of deaths** in children under 5 years
+- In 2019, it caused **740,180 child deaths**
+- Early diagnosis is crucial for effective treatment
+</Warning>
+
+## Current Diagnostic Challenges
+
+Pneumonia diagnosis currently relies on:
+
+<Steps>
+  <Step title="Chest X-Ray">
+    The primary diagnostic method, but requires expert interpretation by trained radiologists
+  </Step>
+  <Step title="Clinical Analysis">
+    Physical examination and symptom assessment
+  </Step>
+  <Step title="Laboratory Tests">
+    Complementary diagnostic procedures
+  </Step>
+</Steps>
+
+### The Core Challenge
+
+X-ray interpretation requires experienced radiologists, who may not be available in:
+- Rural areas
+- Developing countries
+- Under-resourced healthcare facilities
+- Emergency situations requiring immediate analysis
+
+This creates a critical gap between the need for rapid diagnosis and the availability of expert interpretation.
+
+## Our AI Solution
+
+### Main Objective
+
+Develop an automatic classification system based on Deep Learning that can:
+
+- Analyze chest X-ray images
+- Classify whether the patient has pneumonia or is normal
+- Provide a diagnostic support tool for physicians
+
+### Advantages of the AI Approach
+
+<Accordion title="Speed">
+  Analysis in seconds versus minutes or hours with manual interpretation
+</Accordion>
+
+<Accordion title="24/7 Availability">
+  No need for immediate specialist availability - the system works around the clock
+</Accordion>
+
+<Accordion title="Consistency">
+  Reduction of inter-observer variability that can occur with human interpretation
+</Accordion>
+
+<Accordion title="Accessibility">
+  Can be deployed in resource-limited areas without access to radiology specialists
+</Accordion>
+
+<Accordion title="Diagnostic Support">
+  Provides an automated second opinion to assist medical decision-making
+</Accordion>
+
+## Why Deep Learning?
+
+### Technical Justification
+
+**1. Complex Pattern Recognition**
+
+CNNs can identify subtle features in images that are difficult to encode manually:
+- Opacities and infiltrates
+- Consolidations
+- Texture variations in lung tissue
+
+**2. Automatic Feature Learning**
+
+The network automatically extracts relevant features without manual engineering, learning to recognize:
+- Edges and boundaries
+- Tissue density patterns
+- Spatial relationships
+
+**3. High Performance**
+
+Previous studies demonstrate accuracy comparable to expert radiologists.
+
+**4. Scalability**
+
+Can process thousands of images rapidly, enabling:
+- Batch screening programs
+- Retrospective analysis
+- Real-time triage systems
+
+## Why CNNs Specifically?
+
+<Info>
+Convolutional Neural Networks are specialized for image processing with key advantages:
+
+- **Translation invariance**: Detects patterns regardless of position in the image
+- **Parameter reduction**: Shared filters across the image reduce computational requirements
+- **Proven success**: Demonstrated effectiveness in medical imaging applications
+- **Spatial hierarchy**: Captures patterns at multiple scales from edges to complex structures
+</Info>
+
+CNNs are the gold standard for computer vision tasks, particularly in medical imaging where:
+- Pattern detection is critical
+- Spatial relationships matter
+- Feature extraction must be robust
+
+## Project Scope
+
+### What This Project INCLUDES
+
+- Binary classification: **NORMAL vs PNEUMONIA**
+- Supervised training with labeled dataset
+- Evaluation using standard metrics (accuracy, precision, recall, F1-score)
+- Results visualization and confusion matrix
+
+### What This Project DOES NOT Include (Limitations)
+
+<Warning>
+Important limitations to understand:
+
+- No differentiation between viral and bacterial pneumonia
+- No detection of other pulmonary pathologies
+- No specific lesion localization
+- No integration with real hospital systems
+- **NOT a definitive diagnosis** - support tool only
+</Warning>
+
+## Expected Impact
+
+This project demonstrates the viability of AI systems as a tool for:
+
+**Initial Screening**
+
+Deployment in primary healthcare centers for preliminary assessment
+
+**Case Prioritization**
+
+Identifying urgent cases that require immediate attention
+
+**Medical Education**
+
+Serving as a learning tool for medical students and residents
+
+**Research**
+
+Retrospective analysis of large image volumes for epidemiological studies
+
+<Note>
+This AI system is designed as a **clinical decision support tool**, not a replacement for professional medical judgment. It should always be used under the supervision of qualified healthcare professionals.
+</Note>
+
+## The Path Forward
+
+With this problem clearly defined, we can now move forward to:
+- Design an appropriate CNN architecture
+- Acquire and prepare the dataset
+- Train and evaluate the model
+- Deploy the solution for testing
+
+The following sections will detail each of these steps in the development process.

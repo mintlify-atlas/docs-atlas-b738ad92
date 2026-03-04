@@ -1,122 +1,68 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Guías IA - Clasificación de Neumonía",
+  "theme": "palm",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
-  },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "tabs": [
-      {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Getting started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
-          },
-          {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
-            ]
-          }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
+    "primary": "#46bde6",
+    "light": "#a4e0f1",
+    "dark": "#80cee3"
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "https://media.brand.dev/c202ad81-19e6-4258-854e-34df554ea2df.svg",
+    "dark": "https://media.brand.dev/c202ad81-19e6-4258-854e-34df554ea2df.svg"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
     "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "type": "github",
+      "href": "https://github.com/RennfahrerU/guias_IA"
     }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/RennfahrerU/guias_IA"
     }
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Introducción",
+        "pages": [
+          "introduction",
+          "quick-start"
+        ]
+      },
+      {
+        "group": "Fundamentos del Proyecto",
+        "pages": [
+          "fundamentals/problem-statement",
+          "fundamentals/model-design",
+          "fundamentals/dataset-guide"
+        ]
+      },
+      {
+        "group": "Guías de Implementación",
+        "pages": [
+          "guides/complete-guide",
+          "guides/project-structure",
+          "guides/training-evaluation"
+        ]
+      },
+      {
+        "group": "Presentación y Exposición",
+        "pages": [
+          "presentation/presenter-guide",
+          "presentation/key-results",
+          "presentation/faq"
+        ]
+      },
+      {
+        "group": "Recursos Técnicos",
+        "pages": [
+          "resources/cnn-architecture",
+          "resources/data-preprocessing",
+          "resources/metrics-interpretation"
+        ]
+      }
+    ]
   }
 }

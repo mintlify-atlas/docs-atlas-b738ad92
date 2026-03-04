@@ -1,0 +1,158 @@
+---
+title: Guía del Expositor
+description: Estructura completa para presentar el proyecto de clasificación de neumonía en 7 minutos
+---
+
+## Estructura de la Presentación (7 minutos)
+
+Esta guía te ayudará a preparar una presentación efectiva del proyecto de clasificación de neumonía usando Deep Learning.
+
+### Desglose por Tiempo
+
+<Card title="0:00 - 1:00 | Introducción + Problema" icon="play">
+**Leer antes**: `PLANTEAMIENTO.md`
+
+**Puntos clave**:
+- Neumonía = problema de salud global
+- Diagnóstico requiere expertos
+- IA puede ayudar en screening
+
+**Frase de apertura**:
+> "Desarrollamos una red neuronal que analiza rayos X de tórax para detectar neumonía, logrando un 80% de precisión y 96% de sensibilidad."
+
+**Impacto**: "La neumonía mata 740,000 niños al año" y representa el 15% de muertes en niños menores de 5 años.
+</Card>
+
+<Card title="1:00 - 2:00 | Dataset" icon="database">
+**Leer antes**: `INSTRUCCIONES_DATASET.md`
+
+**Puntos clave**:
+- 5,863 imágenes de rayos X
+- 2 clases: NORMAL y PNEUMONIA
+- Dataset público de Kaggle
+
+**Mostrar**: Una imagen del dataset para ilustrar los datos
+</Card>
+
+<Card title="2:00 - 4:00 | Arquitectura CNN (núcleo técnico)" icon="brain">
+**Leer antes**: `DISEÑO_MODELO.md` (páginas 1-2)
+
+**Arquitectura visual**:
+```
+Input (224×224×3)
+    ↓
+3 Bloques Convolucionales
+    ↓
+Pooling + Dropout
+    ↓
+Fully Connected
+    ↓
+Output [NORMAL, PNEUMONIA]
+```
+
+**Por qué CNN?**
+- Detecta patrones en imágenes
+- Invarianza a traslaciones
+- Probada en imagenología médica
+
+**Frase clave**:
+> "Usamos una Red Neuronal Convolucional porque está especializada en procesar imágenes. Tiene 3 capas que detectan patrones: primero líneas y bordes, luego texturas, y finalmente características de neumonía como opacidades."
+</Card>
+
+<Card title="4:00 - 6:00 | Resultados" icon="chart-line">
+**Mostrar**: Gráficas de `results/`
+
+Ver la página [Resultados Clave](/presentation/key-results) para detalles sobre cómo presentar cada gráfica.
+
+**Frase clave**:
+> "Nuestro modelo alcanzó 80% de accuracy en datos nunca vistos, con un AUC-ROC de 0.93, lo que indica excelente capacidad para distinguir entre casos normales y neumonía."
+
+**Sobre la sensibilidad**:
+> "Lo más importante: el modelo tiene 96% de sensibilidad, es decir, detecta casi todos los casos de neumonía. En medicina es mejor tener falsos positivos que perder un caso real."
+</Card>
+
+<Card title="6:00 - 7:00 | Conclusiones" icon="check">
+**Fortalezas**:
+- Alta sensibilidad (96.67%) → Detecta casi todas las neumonías
+- AUC alto (0.93) → Buena capacidad discriminativa
+- Útil para screening inicial
+
+**Limitaciones** (sé honesto):
+- Falsos positivos (necesita verificación médica)
+- Solo clasifica 2 clases (no distingue viral vs bacteriana)
+- Herramienta de apoyo, NO diagnóstico definitivo
+
+**Cierre fuerte**:
+> "Este sistema puede servir como herramienta de screening en centros de salud primarios, ayudando a priorizar casos urgentes y apoyar en el diagnóstico temprano."
+
+"Herramienta útil para salvar vidas"
+</Card>
+
+---
+
+## Archivos a Llevar
+
+### Esenciales
+
+<Card title="Documentos requeridos" icon="folder">
+- ✅ `results/` (carpeta completa con gráficas)
+- ✅ `PLANTEAMIENTO.md`
+- ✅ `DISEÑO_MODELO.md`
+- ✅ `RESUMEN_PARA_EXPOSITOR.md`
+</Card>
+
+### Opcionales (por si preguntan)
+
+<Card title="Material de referencia" icon="book">
+- `GUIA_COMPLETA.md` (referencia completa)
+- `src/model.py` (código de la CNN)
+</Card>
+
+---
+
+## Tips de Presentación
+
+1. **Abre con impacto**: "La neumonía mata 740,000 niños al año"
+2. **Usa las gráficas**: Son visuales y fáciles de entender
+3. **Sé honesto**: Menciona limitaciones
+4. **Enfatiza lo positivo**: 96% sensibilidad es excelente
+5. **Cierra fuerte**: "Herramienta útil para salvar vidas"
+
+---
+
+## Checklist Pre-Exposición
+
+<Card title="Verificación antes de presentar" icon="list-check">
+- [ ] Leí `PLANTEAMIENTO.md` completo
+- [ ] Leí `DISEÑO_MODELO.md` (al menos páginas 1-2)
+- [ ] Revisé todas las gráficas en `results/`
+- [ ] Practiqué explicar la arquitectura CNN
+- [ ] Tengo respuestas para preguntas frecuentes
+- [ ] Sé los números: 80%, 93% AUC, 96% sensibilidad
+- [ ] Puedo explicar por qué CNN es mejor que otras redes
+</Card>
+
+<Info>
+**Recuerda**: El proyecto es sólido, los resultados son buenos, y la aplicación es valiosa. Confía en el trabajo realizado.
+</Info>
+
+---
+
+## En 2 Minutos
+
+Si necesitas un resumen ultra-rápido:
+
+**Problema**:
+- Neumonía mata 15% niños &lt;5 años
+- Necesita radiólogos expertos
+- Zonas rurales no tienen acceso
+
+**Solución**:
+- Red Neuronal Convolucional (CNN)
+- Analiza rayos X automáticamente
+- Screening rápido y consistente
+
+**Resultados**:
+- ✅ 80% Accuracy
+- ✅ 93% AUC-ROC
+- ✅ 96% Sensibilidad (detecta casi todas las neumonías)

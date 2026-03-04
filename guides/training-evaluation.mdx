@@ -1,0 +1,715 @@
+---
+title: Entrenamiento y Evaluación
+description: Proceso de entrenamiento, métricas de evaluación e interpretación de resultados
+---
+
+Esta guía detalla el proceso completo de entrenamiento del modelo CNN y la evaluación de sus resultados.
+
+## Proceso de Entrenamiento
+
+### Configuración Inicial
+
+El entrenamiento se configura con los siguientes parámetros:
+
+<CardGroup cols={2}>
+  <Card title="Épocas" icon="rotate">
+    **20 épocas**
+    
+    Puede detenerse antes con early stopping
+  </Card>
+  <Card title="Batch Size" icon="boxes-stacked">
+    **32 imágenes**
+    
+    Por lote de entrenamiento
+  </Card>
+  <Card title="Learning Rate" icon="gauge">
+    **0.001**
+    
+    Optimizador Adam
+  </Card>
+  <Card title="Validación" icon="chart-simple">
+    **20%**
+    
+    Del conjunto de entrenamiento
+  </Card>
+</CardGroup>
+
+### Ejecutar Entrenamiento
+
+<CodeGroup>
+```bash Comando Básico
+pipenv run python src/train.py
+```
+
+```bash Con main.py
+python main.py train
+```
+
+```bash Train + Evaluate
+python main.py all
+```
+</CodeGroup>
+
+<Info>
+  **Tiempo estimado**: 15-30 minutos en CPU, 5-10 minutos en GPU
+</Info>
+
+---
+
+## Data Augmentation
+
+Para mejorar la generalización del modelo y prevenir overfitting, se aplican las siguientes transformaciones al conjunto de entrenamiento:
+
+<Tabs>
+  <Tab title="Rotación">
+    **Rango**: ±15 grados
+    
+    ```python
+    rotation_range=15
+    ```
+    
+    Simula diferentes ángulos de captura de rayos X.
+  </Tab>
+  
+  <Tab title="Desplazamiento">
+    **Horizontal/Vertical**: ±10%
+    
+    ```python
+    width_shift_range=0.1
+    height_shift_range=0.1
+    ```
+    
+    Simula variaciones en el posicionamiento del paciente.
+  </Tab>
+  
+  <Tab title="Zoom">
+    **Rango**: ±20%
+    
+    ```python
+    zoom_range=0.2
+    ```
+    
+    Simula diferentes distancias de captura.
+  </Tab>
+  
+  <Tab title="Flip">
+    **Horizontal**: Activado
+    
+    ```python
+    horizontal_flip=True
+    ```
+    
+    Aumenta variabilidad (aunque rayos X suelen ser simétricos).
+  </Tab>
+  
+  <Tab title="Rescalado">
+    **Normalización**: [0, 1]
+    
+    ```python
+    rescale=1./255
+    ```
+    
+    Normaliza los valores de píxeles para mejor convergencia.
+  </Tab>
+</Tabs>
+
+<Warning>
+  El data augmentation **solo se aplica al conjunto de entrenamiento**, no al test set, para mantener una evaluación justa.
+</Warning>
+
+---
+
+## Callbacks y Regularización
+
+### Early Stopping
+
+<Card title="Detención Temprana" icon="stop">
+  Detiene el entrenamiento si no hay mejora en validation loss.
+</Card>
+
+**Configuración**:
+```python
+EarlyStopping(
+    monitor='val_loss',
+    patience=5,              # Espera 5 épocas sin mejora
+    restore_best_weights=True  # Restaura los mejores pesos
+)
+```
+
+**Beneficios**:
+- Previene overfitting
+- Ahorra tiempo de entrenamiento
+- Garantiza el mejor modelo posible
+
+### Model Checkpoint
+
+<Card title="Guardado del Mejor Modelo" icon="floppy-disk">
+  Guarda automáticamente el modelo con mejor validation accuracy.
+</Card>
+
+**Configuración**:
+```python
+ModelCheckpoint(
+    'models/best_model.keras',
+    monitor='val_accuracy',
+    save_best_only=True,
+    mode='max'
+)
+```
+
+**Archivo generado**: `models/best_model.keras`
+
+### Reduce Learning Rate
+
+<Card title="Reducción de Learning Rate" icon="gauge-low">
+  Reduce el learning rate cuando el entrenamiento se estanca.
+</Card>
+
+**Configuración**:
+```python
+ReduceLROnPlateau(
+    monitor='val_loss',
+    factor=0.5,       # Reduce a la mitad
+    patience=3,       # Después de 3 épocas sin mejora
+    min_lr=0.00001
+)
+```
+
+### Dropout
+
+<Card title="Regularización" icon="droplet">
+  Dropout de 0.5 en las capas densas para prevenir overfitting.
+</Card>
+
+```python
+Dropout(0.5)
+```
+
+Desactiva aleatoriamente el 50% de las neuronas durante entrenamiento.
+
+---
+
+## Salida del Entrenamiento
+
+### Durante el Entrenamiento
+
+Verás una salida similar a esta:
+
+```
+Epoch 1/20
+163/163 [==============================] - 45s 276ms/step
+loss: 0.3456 - accuracy: 0.8234 - val_loss: 0.2891 - val_accuracy: 0.8567
+
+Epoch 2/20
+163/163 [==============================] - 42s 258ms/step
+loss: 0.2891 - accuracy: 0.8567 - val_loss: 0.2456 - val_accuracy: 0.8723
+
+Epoch 3/20
+163/163 [==============================] - 43s 264ms/step
+loss: 0.2456 - accuracy: 0.8723 - val_loss: 0.2234 - val_accuracy: 0.8891
+
+...
+
+Epoch 15/20
+163/163 [==============================] - 41s 252ms/step
+loss: 0.1234 - accuracy: 0.9456 - val_loss: 0.2891 - val_accuracy: 0.8567
+
+Restoring model weights from the end of the best epoch: 10.
+Epoch 15: early stopping
+```
+
+<Info>
+  Si ves "early stopping", significa que el entrenamiento se detuvo automáticamente porque no hubo mejora en 5 épocas consecutivas.
+</Info>
+
+### Archivos Generados
+
+Al finalizar el entrenamiento, se generan:
+
+<Steps>
+  <Step title="models/best_model.keras">
+    Mejor modelo según validation accuracy durante el entrenamiento.
+    
+    **Este es el modelo que se usa para evaluación.**
+  </Step>
+  
+  <Step title="models/final_model.keras">
+    Modelo al final de todas las épocas (o cuando se detuvo early stopping).
+  </Step>
+  
+  <Step title="results/training_history.png">
+    Gráficas mostrando la evolución de:
+    - Training loss vs Validation loss
+    - Training accuracy vs Validation accuracy
+    
+    Útil para identificar overfitting o underfitting.
+  </Step>
+</Steps>
+
+---
+
+## Evaluación del Modelo
+
+### Ejecutar Evaluación
+
+<CodeGroup>
+```bash Comando Básico
+pipenv run python src/evaluate.py
+```
+
+```bash Con main.py
+python main.py evaluate
+```
+</CodeGroup>
+
+<Info>
+  La evaluación carga automáticamente `models/best_model.keras` y lo evalúa en el test set.
+</Info>
+
+---
+
+## Métricas de Evaluación
+
+### Métricas Principales
+
+El sistema calcula las siguientes métricas en el conjunto de test:
+
+<AccordionGroup>
+  <Accordion title="Accuracy (Exactitud)" icon="bullseye">
+    **Fórmula**: (TP + TN) / (TP + TN + FP + FN)
+    
+    **Significado**: Porcentaje de predicciones correctas sobre el total.
+    
+    **Objetivo**: > 85%
+    
+    **Ejemplo**: Si el modelo tiene 85% accuracy, significa que de 100 predicciones, 85 son correctas.
+  </Accordion>
+  
+  <Accordion title="Precision (Precisión)" icon="crosshairs">
+    **Fórmula**: TP / (TP + FP)
+    
+    **Significado**: De todas las predicciones de PNEUMONIA, ¿cuántas son correctas?
+    
+    **Objetivo**: > 80%
+    
+    **Importancia**: Alta precision significa pocas falsas alarmas.
+    
+    **Ejemplo**: Si precision es 80%, de cada 10 casos que el modelo dice "PNEUMONIA", 8 realmente lo son.
+  </Accordion>
+  
+  <Accordion title="Recall (Sensibilidad)" icon="magnifying-glass">
+    **Fórmula**: TP / (TP + FN)
+    
+    **Significado**: De todos los casos reales de PNEUMONIA, ¿cuántos detecta el modelo?
+    
+    **Objetivo**: > 90%
+    
+    **Importancia**: Alta recall significa que no se pierden casos de neumonía.
+    
+    **Ejemplo**: Si recall es 90%, el modelo detecta 9 de cada 10 casos reales de neumonía.
+    
+    <Warning>
+      Esta es la métrica más importante en screening médico - no queremos perder casos de enfermedad.
+    </Warning>
+  </Accordion>
+  
+  <Accordion title="F1-Score" icon="balance-scale">
+    **Fórmula**: 2 × (Precision × Recall) / (Precision + Recall)
+    
+    **Significado**: Media armónica entre precision y recall.
+    
+    **Objetivo**: > 85%
+    
+    **Importancia**: Balancea precision y recall en una sola métrica.
+    
+    **Ejemplo**: F1-Score alto significa buen balance entre no perder casos y no dar falsas alarmas.
+  </Accordion>
+  
+  <Accordion title="AUC-ROC" icon="chart-line">
+    **Nombre completo**: Area Under the ROC Curve
+    
+    **Rango**: 0.0 a 1.0
+    
+    **Significado**: Capacidad del modelo para discriminar entre clases.
+    
+    **Objetivo**: > 0.90
+    
+    **Interpretación**:
+    - 0.5: Clasificador aleatorio
+    - 0.7-0.8: Aceptable
+    - 0.8-0.9: Excelente
+    - > 0.9: Sobresaliente
+  </Accordion>
+</AccordionGroup>
+
+### Matriz de Confusión
+
+La matriz de confusión muestra los 4 tipos de resultados:
+
+| | **Predicción: NORMAL** | **Predicción: PNEUMONIA** |
+|---|---|---|
+| **Real: NORMAL** | TN (True Negative) | FP (False Positive) |
+| **Real: PNEUMONIA** | FN (False Negative) | TP (True Positive) |
+
+**Interpretación**:
+- **TN (True Negative)**: Casos sanos correctamente identificados
+- **TP (True Positive)**: Casos de neumonía correctamente identificados
+- **FP (False Positive)**: Falsa alarma - el modelo dice neumonía pero está sano
+- **FN (False Negative)**: Caso perdido - el modelo dice sano pero tiene neumonía
+
+<Warning>
+  En contexto médico, los **False Negatives (FN)** son los más peligrosos porque significan casos de neumonía no detectados.
+</Warning>
+
+---
+
+## Visualizaciones Generadas
+
+### 1. training_history.png
+
+<Card title="Historial de Entrenamiento" icon="chart-line">
+  Gráficas de evolución durante el entrenamiento.
+</Card>
+
+**Contiene 2 subplots**:
+
+<Tabs>
+  <Tab title="Loss">
+    Gráfica de pérdida (loss) por época:
+    - **Línea azul**: Training loss
+    - **Línea naranja**: Validation loss
+    
+    **Interpretación**:
+    - Si val_loss > train_loss y la brecha crece: **Overfitting**
+    - Si ambas son altas: **Underfitting**
+    - Si ambas bajan juntas: **Buen entrenamiento**
+  </Tab>
+  
+  <Tab title="Accuracy">
+    Gráfica de accuracy por época:
+    - **Línea azul**: Training accuracy
+    - **Línea naranja**: Validation accuracy
+    
+    **Interpretación**:
+    - Si train_acc >> val_acc: **Overfitting**
+    - Si ambas son bajas: **Underfitting**
+    - Si ambas suben juntas: **Buen entrenamiento**
+  </Tab>
+</Tabs>
+
+**Ubicación**: `results/training_history.png`
+
+### 2. confusion_matrix.png
+
+<Card title="Matriz de Confusión" icon="table">
+  Visualización de las predicciones vs etiquetas reales.
+</Card>
+
+**Contenido**:
+- Matriz 2x2 con valores absolutos
+- Colores: más oscuro = más casos
+- Incluye las 4 métricas principales (Accuracy, Precision, Recall, F1)
+
+**Ejemplo de interpretación**:
+```
+                 Predicción
+              NORMAL  PNEUMONIA
+Real NORMAL      210      24      ← 24 falsos positivos
+     PNEUMONIA   18     372      ← 18 falsos negativos
+                  ↑       ↑
+                  18 FN   372 TP
+
+Accuracy:  0.9327
+Precision: 0.9394
+Recall:    0.9538
+F1-Score:  0.9465
+```
+
+**Ubicación**: `results/confusion_matrix.png`
+
+### 3. roc_curve.png
+
+<Card title="Curva ROC" icon="chart-area">
+  Representa la capacidad de discriminación del modelo.
+</Card>
+
+**Ejes**:
+- **X**: False Positive Rate (Tasa de falsos positivos)
+- **Y**: True Positive Rate (Tasa de verdaderos positivos)
+
+**Interpretación**:
+- Línea diagonal (AUC=0.5): Clasificador aleatorio
+- Curva pegada a la esquina superior izquierda: Modelo perfecto
+- Área bajo la curva (AUC): Métrica de desempeño general
+
+**Incluye**:
+- Curva ROC en azul
+- Línea diagonal de referencia (punteada)
+- Valor AUC en la leyenda
+
+**Ubicación**: `results/roc_curve.png`
+
+### 4. predictions.png
+
+<Card title="Ejemplos de Predicciones" icon="images">
+  Grid visual de predicciones del modelo.
+</Card>
+
+**Muestra**:
+- 12 ejemplos aleatorios del test set
+- Imagen original del rayo X
+- Etiqueta real (verde si correcto, rojo si error)
+- Predicción del modelo
+- Probabilidad de la predicción
+
+**Ejemplo de título**:
+```
+Real: PNEUMONIA
+Pred: PNEUMONIA (98.5%)
+```
+
+**Útil para**:
+- Presentaciones y demos
+- Identificar patrones de errores
+- Validación cualitativa
+
+**Ubicación**: `results/predictions.png`
+
+---
+
+## Salida de Evaluación
+
+### Console Output
+
+Al ejecutar `evaluate.py`, verás una salida como esta:
+
+```
+Cargando modelo: models/best_model.keras
+
+Evaluando modelo en test set...
+20/20 [==============================] - 8s 402ms/step
+
+Métricas de Evaluación:
+========================
+Accuracy:  0.8526
+Precision: 0.8234
+Recall:    0.9231
+F1-Score:  0.8705
+AUC-ROC:   0.9234
+
+Matriz de Confusión:
+                Pred NORMAL  Pred PNEUMONIA
+Real NORMAL            200              34
+Real PNEUMONIA          30             360
+
+Gráficas guardadas en:
+- results/confusion_matrix.png
+- results/roc_curve.png
+- results/predictions.png
+
+Evaluación completada exitosamente!
+```
+
+---
+
+## Interpretación de Resultados
+
+### Escenario Ideal
+
+<CardGroup cols={2}>
+  <Card title="Alta Recall" icon="magnifying-glass">
+    **> 90%**
+    
+    No perdemos casos de neumonía
+  </Card>
+  <Card title="Alta Precision" icon="crosshairs">
+    **> 80%**
+    
+    Pocas falsas alarmas
+  </Card>
+  <Card title="Buen Balance" icon="balance-scale">
+    **F1 > 85%**
+    
+    Equilibrio entre metrics
+  </Card>
+  <Card title="Discriminación" icon="chart-line">
+    **AUC > 0.90**
+    
+    Excelente separación de clases
+  </Card>
+</CardGroup>
+
+### Interpretación Clínica
+
+<Tabs>
+  <Tab title="Screening Tool">
+    El modelo está diseñado como herramienta de **screening** (primera línea):
+    
+    - **Alta Recall**: Minimiza casos perdidos
+    - **Decisión final**: Siempre debe ser de un médico
+    - **Contexto**: Útil en áreas con escasez de radiólogos
+  </Tab>
+  
+  <Tab title="Falsos Positivos">
+    FP (Falsa alarma de neumonía):
+    
+    - **Consecuencia**: Estudio adicional innecesario
+    - **Impacto**: Bajo - se detecta en evaluación médica
+    - **Trade-off aceptable**: Preferible a perder casos reales
+  </Tab>
+  
+  <Tab title="Falsos Negativos">
+    FN (Caso de neumonía no detectado):
+    
+    - **Consecuencia**: Paciente sin tratamiento
+    - **Impacto**: Alto - puede empeorar condición
+    - **Objetivo**: Minimizar al máximo (Recall > 90%)
+  </Tab>
+  
+  <Tab title="Uso Responsable">
+    Consideraciones importantes:
+    
+    - No reemplaza diagnóstico médico
+    - Debe usarse como apoyo a la decisión
+    - Requiere validación clínica
+    - Contexto: Screening inicial en zonas rurales
+  </Tab>
+</Tabs>
+
+---
+
+## Resultados Esperados
+
+### Rangos Típicos
+
+Con este dataset y arquitectura, los resultados típicos son:
+
+| Métrica | Rango Esperado | Objetivo |
+|---------|----------------|----------|
+| **Accuracy** | 80-90% | > 85% |
+| **Precision** | 75-85% | > 80% |
+| **Recall** | 85-95% | > 90% |
+| **F1-Score** | 80-90% | > 85% |
+| **AUC-ROC** | 0.85-0.95 | > 0.90 |
+
+<Info>
+  Si tus resultados están en estos rangos, el modelo está funcionando correctamente.
+</Info>
+
+### Comparación con Literatura
+
+Estudios similares reportan:
+
+- **CheXNet** (Rajpurkar et al., 2017): AUC 0.93-0.96
+- **Dataset original** (Kermany et al., 2018): Accuracy 92.8%
+- **Este proyecto**: Accuracy 80-90%
+
+<Tip>
+  Resultados ligeramente más bajos son esperables debido a:
+  - Arquitectura más simple (educativa)
+  - Sin transfer learning
+  - Menos épocas de entrenamiento
+</Tip>
+
+---
+
+## Solución de Problemas
+
+<AccordionGroup>
+  <Accordion title="Accuracy muy baja (&lt;70%)">
+    **Posibles causas**:
+    - Dataset no cargado correctamente
+    - Modelo no entrenado suficientes épocas
+    - Learning rate demasiado alto/bajo
+    
+    **Soluciones**:
+    - Verifica con `verificar_dataset.py`
+    - Aumenta épocas a 30-40
+    - Ajusta learning rate (0.0001 - 0.01)
+  </Accordion>
+  
+  <Accordion title="Overfitting (train_acc >> val_acc)">
+    **Síntomas**:
+    - Train accuracy > 95%
+    - Val accuracy < 80%
+    - Brecha grande entre ambas
+    
+    **Soluciones**:
+    - Ya incluye Dropout (0.5)
+    - Ya incluye Data Augmentation
+    - Reduce épocas
+    - Considera early stopping más agresivo
+  </Accordion>
+  
+  <Accordion title="Recall muy bajo (&lt;80%)">
+    **Problema**: Muchos casos de neumonía no detectados
+    
+    **Soluciones**:
+    - Ajusta threshold de clasificación (< 0.5)
+    - Balancea dataset (tiene más PNEUMONIA que NORMAL)
+    - Usa class_weight en el entrenamiento
+  </Accordion>
+  
+  <Accordion title="Entrenamiento muy lento">
+    **Causas**:
+    - CPU sin aceleración
+    - Batch size demasiado pequeño
+    
+    **Soluciones**:
+    - Usa GPU si está disponible
+    - Aumenta batch_size (si hay RAM)
+    - Reduce tamaño de imágenes (actual: 224x224)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Checklist de Evaluación
+
+Antes de dar por terminado el proyecto:
+
+- [ ] Modelo entrenado exitosamente sin errores
+- [ ] Accuracy > 80% en test set
+- [ ] Recall > 85% (prioridad en screening)
+- [ ] Todas las gráficas generadas en `results/`
+- [ ] Confusion matrix revisada (FN aceptables)
+- [ ] ROC curve con AUC > 0.85
+- [ ] Ejemplos de predicciones revisados visualmente
+- [ ] Interpretación clínica entendida
+- [ ] Limitaciones del modelo documentadas
+
+---
+
+## Próximos Pasos
+
+Después de completar el entrenamiento y evaluación:
+
+<Steps>
+  <Step title="Analizar resultados">
+    Revisa todas las gráficas y métricas en `results/`
+  </Step>
+  
+  <Step title="Preparar informe">
+    Incluye:
+    - Metodología de entrenamiento
+    - Métricas obtenidas
+    - Visualizaciones
+    - Interpretación clínica
+  </Step>
+  
+  <Step title="Preparar presentación">
+    Muestra:
+    - Arquitectura del modelo
+    - Proceso de entrenamiento
+    - Resultados (confusion matrix + ROC)
+    - Ejemplos de predicciones
+  </Step>
+  
+  <Step title="Considerar mejoras">
+    Posibles extensiones:
+    - Transfer learning (VGG16, ResNet)
+    - Grad-CAM para visualización
+    - Clasificación multiclase
+    - Ensemble de modelos
+  </Step>
+</Steps>

@@ -1,0 +1,341 @@
+---
+title: Model Design
+description: CNN architecture, hyperparameters, and the technical decisions behind the pneumonia classifier
+---
+
+## Neural Network Type
+
+**Convolutional Neural Network (CNN)**
+
+We chose a custom CNN architecture with three convolutional blocks designed specifically for medical image classification.
+
+## Architecture Justification
+
+### Why CNN vs Other Neural Network Types?
+
+<Accordion title="CNN vs Multi-Layer Perceptron (MLP)">
+  **Problems with MLP:**
+  - Would require flattening the image (224×224×3 = 150,528 input parameters)
+  - Loss of spatial information
+  - Prohibitive number of parameters
+  - Cannot capture local relationships between pixels
+
+  **Advantages of CNN:**
+  - Maintains 2D spatial structure
+  - Shared parameters in filters
+  - Detects local features (edges, textures)
+  - Translation invariance
+</Accordion>
+
+<Accordion title="CNN vs Recurrent Neural Networks (RNN/LSTM)">
+  **Problems with RNN/LSTM:**
+  - Designed for sequential data (text, time series)
+  - Don't leverage spatial structure of images
+  - Slower to train
+  - Unnecessarily complex for this problem
+
+  **Advantages of CNN:**
+  - Optimized for data with spatial structure
+  - Efficient parallel operations
+  - Proven architecture for medical images
+</Accordion>
+
+## CNN Architecture
+
+### High-Level Design
+
+```
+INPUT (224×224×3) → CONV → POOL → CONV → POOL → CONV → POOL → FC → OUTPUT (2)
+```
+
+### Detailed Architecture Diagram
+
+```
+┌─────────────────────┐
+│  Input: 224×224×3   │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│  Conv2D (32, 3×3)   │
+│  ReLU               │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│  MaxPool2D (2×2)    │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│  Conv2D (64, 3×3)   │
+│  ReLU               │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│  MaxPool2D (2×2)    │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│  Conv2D (128, 3×3)  │
+│  ReLU               │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│  MaxPool2D (2×2)    │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│  Flatten            │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│  Dense (128)        │
+│  ReLU               │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│  Dropout (0.5)      │
+└──────────┬──────────┘
+           │
+┌──────────▼──────────┐
+│  Dense (2)          │
+│  Softmax            │
+└──────────┬──────────┘
+           │
+           ▼
+    [Normal, Pneumonia]
+```
+
+## Layer-by-Layer Breakdown
+
+### Input Layer
+
+- **Dimension**: 224 × 224 × 3 (RGB)
+- **Preprocessing**: Normalization [0, 1], resizing
+
+### Convolutional Block 1
+
+**Conv2D Layer**
+- **32 filters**, 3×3 kernel, ReLU activation
+- **Why 32 filters?** Balance between capacity and efficiency for initial feature detection
+- **Why 3×3 kernel?** Captures basic local patterns (edges, lines)
+
+**MaxPooling2D**
+- 2×2 pool size
+- Reduces dimensions to 112×112
+- Provides invariance to small translations
+- Reduces computational load
+
+### Convolutional Block 2
+
+**Conv2D Layer**
+- **64 filters**, 3×3 kernel, ReLU activation
+- Deeper filters capture more complex patterns
+- Detects textures and opacity patterns
+
+**MaxPooling2D**
+- 2×2 pool size
+- Reduces dimensions to 56×56
+
+### Convolutional Block 3
+
+**Conv2D Layer**
+- **128 filters**, 3×3 kernel, ReLU activation
+- High-level feature extraction
+- Pneumonia-specific patterns (consolidations, infiltrates)
+
+**MaxPooling2D**
+- 2×2 pool size
+- Final dimension: 28×28
+
+### Fully Connected Layers
+
+**Flatten**
+- Converts 3D tensor to 1D vector
+
+**Dense Layer (128 neurons)**
+- ReLU activation
+- Combines features for decision making
+
+**Dropout (0.5)**
+- **Regularization**: Prevents overfitting
+- Randomly deactivates 50% of neurons during training
+- Forces network to learn robust features
+
+**Output Layer (2 neurons)**
+- Softmax activation
+- 2 classes: [NORMAL, PNEUMONIA]
+- Outputs probabilities that sum to 1
+
+## Activation Functions
+
+### ReLU (Rectified Linear Unit)
+
+Used in all hidden layers:
+
+```
+f(x) = max(0, x)
+```
+
+<Info>
+**Advantages of ReLU:**
+- No vanishing gradient problem
+- Computationally efficient
+- Introduces non-linearity
+- Standard in modern CNNs
+</Info>
+
+### Softmax
+
+Used in output layer:
+
+```
+softmax(xi) = exp(xi) / Σ exp(xj)
+```
+
+<Info>
+**Advantages of Softmax:**
+- Converts logits to probabilities
+- Clear probabilistic interpretation
+- Ideal for multi-class classification
+</Info>
+
+## Hyperparameters
+
+### Training Configuration
+
+**Loss Function: Categorical Crossentropy**
+- Penalizes incorrect predictions
+- Standard for classification tasks
+
+**Optimizer: Adam**
+- Adaptive learning rate
+- Combines advantages of RMSprop and Momentum
+- Fast and stable convergence
+- **Initial learning rate**: 0.001
+
+<Note>
+Adam is chosen over SGD for its adaptive learning rate, which helps navigate the complex loss landscape of deep networks more efficiently.
+</Note>
+
+**Metrics**
+- **Accuracy**: Percentage of correct predictions
+- **Precision**: Of predicted pneumonia cases, how many are correct
+- **Recall (Sensitivity)**: Of actual pneumonia cases, how many we detect
+- **F1-Score**: Harmonic mean of precision and recall
+
+### Regularization Strategies
+
+<Accordion title="1. Dropout (50%)">
+  - Prevents co-adaptation of neurons
+  - Reduces overfitting
+  - Simulates ensemble of networks
+  - Applied only during training
+</Accordion>
+
+<Accordion title="2. Data Augmentation">
+  Applied during training:
+  - **Rotations**: ±15 degrees
+  - **Translations**: ±10%
+  - **Zoom**: ±10%
+  - **Horizontal flip**: Yes
+  
+  **Goal**: Increase dataset variability and improve generalization
+</Accordion>
+
+<Accordion title="3. Early Stopping">
+  - Monitors validation loss
+  - Stops training if no improvement for 5 epochs
+  - Prevents overfitting to training data
+  - Restores best weights
+</Accordion>
+
+## Model Parameters
+
+### Parameter Count Estimation
+
+```
+Conv1:     32 × (3×3×3 + 1) = 896 parameters
+Conv2:     64 × (3×3×32 + 1) = 18,496 parameters
+Conv3:     128 × (3×3×64 + 1) = 73,856 parameters
+Dense1:    128 × (128×28×28) + 128 ≈ 12.8M parameters
+Output:    2 × (128 + 1) = 258 parameters
+
+Total: ~13M parameters
+```
+
+## Model Size Justification
+
+### Why This Architecture?
+
+<Info>
+**Not Too Deep**
+- Avoids overfitting with limited dataset (~6K images)
+- Faster training time
+
+**Not Too Shallow**
+- Sufficient capacity to learn complex patterns
+- Can capture hierarchical features
+
+**Balanced**
+- Between accuracy and training time
+- Can be trained on CPU in reasonable time
+- Production-ready for deployment
+</Info>
+
+### Alternative Approaches Considered
+
+<Accordion title="Transfer Learning (VGG16, ResNet50)">
+  **Advantages:**
+  - Better potential accuracy
+  - Less training data needed
+  - Pre-trained on ImageNet
+
+  **Disadvantages:**
+  - Greater complexity
+  - Harder to explain
+  - Larger model size
+
+  **Decision:** Not used to maintain simplicity and educational value
+</Accordion>
+
+<Accordion title="Simpler Model (1-2 Conv Layers)">
+  **Advantages:**
+  - Faster training
+  - Fewer parameters
+  - Lower computational requirements
+
+  **Disadvantages:**
+  - Insufficient capacity
+  - Lower performance
+  - Cannot capture complex patterns
+
+  **Decision:** Insufficient for pneumonia detection complexity
+</Accordion>
+
+## Progressive Feature Learning
+
+The architecture follows a pattern of progressive feature extraction:
+
+**Layer 1 (32 filters)**: Basic features
+- Edges and lines
+- Simple gradients
+- Basic texture elements
+
+**Layer 2 (64 filters)**: Mid-level features
+- Texture patterns
+- Opacity variations
+- Shape components
+
+**Layer 3 (128 filters)**: High-level features
+- Consolidation patterns
+- Infiltrate signatures
+- Disease-specific markers
+
+<Warning>
+This hierarchical feature learning is what makes CNNs so effective for medical image analysis - each layer builds upon the previous one to create increasingly sophisticated representations.
+</Warning>
+
+## Technical References
+
+- He et al. (2016) - Deep Residual Learning
+- Simonyan & Zisserman (2014) - VGG Networks
+- Rajpurkar et al. (2017) - CheXNet: Radiologist-Level Pneumonia Detection

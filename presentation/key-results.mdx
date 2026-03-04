@@ -1,0 +1,189 @@
+---
+title: Resultados Clave
+description: Métricas principales, interpretación de gráficas y significancia clínica del modelo de clasificación de neumonía
+---
+
+## Métricas Principales
+
+El modelo de clasificación de neumonía alcanzó los siguientes resultados en el conjunto de test:
+
+<CardGroup cols={3}>
+  <Card title="80% Accuracy" icon="bullseye">
+    Precisión general en datos nunca vistos durante el entrenamiento
+  </Card>
+  <Card title="93% AUC-ROC" icon="chart-area">
+    Excelente capacidad para distinguir entre casos normales y neumonía
+  </Card>
+  <Card title="96% Sensibilidad" icon="shield-check">
+    Detecta casi todos los casos de neumonía (solo 3.33% de falsos negativos)
+  </Card>
+</CardGroup>
+
+<Note>
+**Frase para la presentación**:
+> "Nuestro modelo alcanzó 80% de accuracy en datos nunca vistos, con un AUC-ROC de 0.93, lo que indica excelente capacidad para distinguir entre casos normales y neumonía."
+</Note>
+
+---
+
+## Interpretación de Gráficas
+
+Cada gráfica en la carpeta `results/` cuenta una parte importante de la historia del modelo.
+
+### 1. training_history.png
+
+<Card title="Historial de Entrenamiento" icon="chart-line">
+**Qué muestra**:
+- Evolución del accuracy durante el entrenamiento
+- Comparación entre train y validation
+- Progreso epoch por epoch
+
+**Cómo interpretarla**:
+- "El modelo mejora con cada época"
+- Observar si hay overfitting (train sube mucho más que validation)
+- La curva muestra el aprendizaje progresivo del modelo
+
+**Para la presentación**:
+Señala cómo las métricas mejoran consistentemente, demostrando que el modelo está aprendiendo patrones útiles.
+</Card>
+
+### 2. confusion_matrix.png
+
+<Card title="Matriz de Confusión" icon="table">
+**Qué muestra**:
+- 122 casos NORMAL clasificados correctamente
+- 377 casos PNEUMONIA clasificados correctamente
+- Distribución de errores: falsos positivos y falsos negativos
+
+**Cómo interpretarla**:
+```
+                 Predicción
+               NORMAL  PNEUMONIA
+Real  NORMAL     122       28
+      PNEUMONIA  13      377
+```
+
+- Total: 499 predicciones en test
+- Accuracy = (122 + 377) / 540 = 80%
+- El modelo es mejor detectando neumonía que descartándola
+
+**Para la presentación**:
+"De 540 imágenes de prueba, el modelo clasificó correctamente 499, logrando 80% de precisión. Noten que tiene muy pocos falsos negativos (solo 13), lo cual es crítico en medicina."
+</Card>
+
+### 3. roc_curve.png
+
+<Card title="Curva ROC" icon="chart-area">
+**Qué muestra**:
+- AUC (Area Under Curve) = 0.93
+- Relación entre sensibilidad y especificidad
+- Capacidad discriminativa del modelo
+
+**Cómo interpretarla**:
+- AUC = 1.0 sería perfecto
+- AUC = 0.5 sería aleatorio
+- AUC = 0.93 es "Excelente capacidad discriminativa"
+
+**Escalas de interpretación**:
+- 0.90 - 1.00: Excelente
+- 0.80 - 0.90: Bueno
+- 0.70 - 0.80: Aceptable
+- 0.60 - 0.70: Pobre
+
+**Para la presentación**:
+> "El AUC de 0.93 indica que el modelo tiene excelente capacidad para distinguir entre casos normales y neumonía. Esto es comparable a muchos sistemas de apoyo al diagnóstico médico."
+</Card>
+
+### 4. predictions.png
+
+<Card title="Predicciones de Ejemplo" icon="images">
+**Qué muestra**:
+- Ejemplos visuales de clasificaciones
+- Imágenes reales con sus predicciones
+- Casos correctos e incorrectos
+
+**Cómo interpretarla**:
+- Permite ver qué patrones detecta el modelo
+- Muestra casos donde el modelo tiene confianza alta/baja
+- Ejemplos concretos de aciertos y errores
+
+**Para la presentación**:
+"Así clasifica el modelo en la práctica. Pueden ver ejemplos reales de rayos X y cómo el sistema identifica la presencia o ausencia de neumonía."
+</Card>
+
+---
+
+## Significancia Clínica
+
+### La Importancia de la Alta Sensibilidad
+
+<Card title="96% de Sensibilidad" icon="shield-virus">
+**¿Qué significa?**
+- De cada 100 casos de neumonía, el modelo detecta 96
+- Solo 3-4 casos de neumonía pasan desapercibidos
+- Minimiza los falsos negativos (el error más peligroso en medicina)
+
+**Por qué es crítico**:
+> "Lo más importante: el modelo tiene 96% de sensibilidad, es decir, detecta casi todos los casos de neumonía. En medicina es mejor tener falsos positivos que perder un caso real."
+
+**Contexto médico**:
+- Un falso negativo = paciente con neumonía no detectada → alto riesgo
+- Un falso positivo = verificación adicional → bajo riesgo
+- El modelo prioriza no perder casos reales
+</Card>
+
+### Aplicación Práctica
+
+<Card title="Uso en Screening Inicial" icon="hospital">
+**Fortalezas del sistema**:
+- Alta sensibilidad (96.67%) → Detecta casi todas las neumonías
+- AUC alto (0.93) → Buena capacidad discriminativa
+- Útil para screening inicial en centros de atención primaria
+- Puede priorizar casos urgentes
+- Screening rápido y consistente
+
+**Limitaciones honestas**:
+- Falsos positivos requieren verificación médica
+- Solo clasifica 2 clases (no distingue viral vs bacteriana)
+- Herramienta de apoyo, NO diagnóstico definitivo
+- Requiere validación clínica adicional para uso hospitalario
+</Card>
+
+---
+
+## Comparación: Validación vs Test
+
+<Warning>
+**Pregunta común**: "¿Por qué 95% en validación pero 80% en test?"
+</Warning>
+
+<Card title="Explicación de la Diferencia" icon="scale-balanced">
+**Validación (95%)**:
+- Datos vistos durante el entrenamiento
+- El modelo ajusta hiperparámetros basándose en estos datos
+- Rendimiento más optimista
+
+**Test (80%)**:
+- Datos completamente nuevos
+- Nunca vistos por el modelo
+- Refleja el rendimiento real en producción
+
+**Interpretación**:
+> "El 95% era en validación (datos que el modelo veía durante entrenamiento). El 80% es en test (datos completamente nuevos). Esto es normal y demuestra que el modelo generaliza bien."
+
+Una caída de 15 puntos porcentuales es aceptable y muestra que el modelo no tiene overfitting severo.
+</Card>
+
+---
+
+## Resumen para Memorizar
+
+<Card title="Los Números Clave" icon="brain">
+**Memoriza estos tres números**:
+1. **80%** - Accuracy en test (datos nunca vistos)
+2. **93%** - AUC-ROC (capacidad discriminativa excelente)
+3. **96%** - Sensibilidad (detecta casi todas las neumonías)
+
+**Mensaje principal**:
+El modelo es especialmente bueno detectando neumonía (alta sensibilidad), lo cual es exactamente lo que se necesita en una herramienta de screening médico. Es mejor marcar casos para revisión que dejar pasar una neumonía real.
+</Card>

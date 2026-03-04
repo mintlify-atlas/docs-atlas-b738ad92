@@ -1,0 +1,327 @@
+---
+title: Dataset Guide
+description: Comprehensive guide to obtaining, preparing, and understanding the Chest X-Ray pneumonia dataset
+---
+
+## Dataset Overview
+
+### Chest X-Ray Images (Pneumonia)
+
+**Source**: Kaggle  
+**Author**: Paul Mooney  
+**URL**: https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia  
+**Size**: ~1.15 GB (5,863 images)  
+**License**: CC BY 4.0
+
+### Description
+
+The dataset contains chest X-ray radiographs from pediatric patients (ages 1-5 years) from the Guangzhou Women and Children's Medical Center, China.
+
+<Info>
+Images are organized into 3 folders (train, test, val) with subfolders for each category (Pneumonia/Normal).
+</Info>
+
+## Dataset Composition
+
+### Distribution Statistics
+
+```
+Total images: 5,863
+├── Train:     5,216 images (89%)
+│   ├── NORMAL:    1,341 images
+│   └── PNEUMONIA: 3,875 images
+├── Test:        624 images (11%)
+│   ├── NORMAL:    234 images
+│   └── PNEUMONIA: 390 images
+└── Val:          16 images (very small, not used)
+```
+
+<Warning>
+The original validation set contains only 16 images, which is too small for reliable validation. Our code automatically creates a proper 80/20 split from the training set.
+</Warning>
+
+### Class Distribution
+
+The dataset has **class imbalance**:
+- Normal cases: ~26% of training data
+- Pneumonia cases: ~74% of training data
+
+This imbalance reflects real-world clinical scenarios but requires careful handling during training.
+
+## Download Instructions
+
+### Option 1: Manual Download (Recommended)
+
+<Steps>
+  <Step title="Visit Kaggle">
+    Go to https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia
+    
+    If you don't have a Kaggle account, create one (it's free)
+  </Step>
+  
+  <Step title="Download the Dataset">
+    Click the **Download** button (top right)
+    
+    A file named `archive.zip` (~1.15 GB) will download
+  </Step>
+  
+  <Step title="Extract Files">
+    Unzip `archive.zip`
+    
+    You'll find a folder named `chest_xray`
+  </Step>
+  
+  <Step title="Move to Project">
+    Place the extracted folder in your project:
+    
+    ```
+    proyectoia/
+    └── data/
+        └── chest_xray/
+            ├── train/
+            │   ├── NORMAL/
+            │   │   └── [1341 .jpeg images]
+            │   └── PNEUMONIA/
+            │       └── [3875 .jpeg images]
+            └── test/
+                ├── NORMAL/
+                │   └── [234 .jpeg images]
+                └── PNEUMONIA/
+                    └── [390 .jpeg images]
+    ```
+  </Step>
+</Steps>
+
+### Option 2: Download with Kaggle API
+
+For command-line enthusiasts:
+
+<Steps>
+  <Step title="Install Kaggle API">
+    ```bash
+    pipenv install kaggle
+    ```
+  </Step>
+  
+  <Step title="Configure Credentials">
+    1. Go to your Kaggle profile → Account → API → Create New Token
+    2. Download `kaggle.json`
+    3. On Windows, move it to: `C:\Users\<username>\.kaggle\kaggle.json`
+    4. On Linux/Mac: `~/.kaggle/kaggle.json` and run `chmod 600 ~/.kaggle/kaggle.json`
+  </Step>
+  
+  <Step title="Download Dataset">
+    ```bash
+    pipenv run kaggle datasets download -d paultimothymooney/chest-xray-pneumonia -p data/
+    cd data
+    unzip chest-xray-pneumonia.zip -d chest_xray
+    ```
+  </Step>
+</Steps>
+
+## Dataset Verification
+
+After downloading, verify the structure:
+
+```bash
+pipenv run python verificar_dataset.py
+```
+
+### Expected Structure
+
+```
+data/chest_xray/
+├── train/
+│   ├── NORMAL/         [1,341 images]
+│   └── PNEUMONIA/      [3,875 images]
+├── test/
+│   ├── NORMAL/         [234 images]
+│   └── PNEUMONIA/      [390 images]
+└── val/ (optional, not used)
+```
+
+<Note>
+If the verification script reports any missing images or incorrect counts, re-download the dataset to ensure data integrity.
+</Note>
+
+## Image Characteristics
+
+### Technical Specifications
+
+- **Format**: JPEG
+- **Dimensions**: Variable (resized to 224×224 in code)
+- **Channels**: 3 (RGB, though X-rays are grayscale)
+- **Quality**: Real clinical-use images
+- **Bit Depth**: 8-bit per channel
+
+### Clinical Categories
+
+**NORMAL**
+- Clear lung parenchyma
+- No abnormal opacities
+- Normal cardiothoracic ratio
+- Clear costophrenic angles
+
+**PNEUMONIA**
+- Presence of infiltrates
+- Opacities or consolidations
+- Increased density in lung fields
+- May show air bronchograms
+
+<Info>
+The dataset includes both viral and bacterial pneumonia cases, though they are not separately labeled.
+</Info>
+
+## Ethical and Legal Considerations
+
+### License Information
+
+The dataset is released under **CC BY 4.0** license, which permits:
+
+- ✅ Commercial and non-commercial use
+- ✅ Modification and distribution
+- ✅ Research and education
+
+**Requirement**: Provide appropriate attribution to the creator.
+
+### Privacy Protection
+
+<Info>
+- All images have been anonymized
+- No patient-identifiable information is present
+- Approved for research use
+- Compliant with medical data sharing regulations
+</Info>
+
+### Responsible Use
+
+<Warning>
+**CRITICAL**: This model is for educational and research purposes ONLY.
+
+**DO NOT use for:**
+- Real clinical diagnosis without medical supervision
+- Replacing professional radiologist judgment
+- Medical decision-making without additional validation
+- Patient care without proper clinical oversight
+
+**AI systems are clinical decision support tools**, not replacements for healthcare professionals.
+</Warning>
+
+## Preprocessing Pipeline
+
+Our code automatically applies the following preprocessing:
+
+### 1. Resizing
+- All images resized to **224×224 pixels**
+- Maintains aspect ratio considerations
+- Standard input size for the CNN
+
+### 2. Normalization
+- Pixel values scaled to **[0, 1]** range
+- Divides by 255.0
+- Improves training stability
+
+### 3. Data Augmentation (Training Only)
+
+<Accordion title="Rotation">
+  - Random rotations: **±15 degrees**
+  - Simulates different patient positioning
+  - Improves rotation invariance
+</Accordion>
+
+<Accordion title="Translation">
+  - Horizontal/vertical shifts: **±10%**
+  - Accounts for different X-ray centering
+  - Enhances spatial robustness
+</Accordion>
+
+<Accordion title="Zoom">
+  - Random zoom: **±10%**
+  - Simulates different patient distances
+  - Improves scale invariance
+</Accordion>
+
+<Accordion title="Horizontal Flip">
+  - Random horizontal flipping
+  - Anatomically valid (lungs are roughly symmetric)
+  - Doubles effective training data
+</Accordion>
+
+<Note>
+Data augmentation is applied **only during training**, not during validation or testing, to ensure fair evaluation.
+</Note>
+
+## Dataset Split Strategy
+
+### Our Approach
+
+Since the original validation set is too small, we:
+
+1. **Combine** train and val sets
+2. **Create new split**: 80% train / 20% validation
+3. **Keep original test set** separate and untouched
+
+### Final Distribution
+
+```
+Training:   ~4,173 images (80% of combined train+val)
+Validation: ~1,043 images (20% of combined train+val)
+Test:         624 images (original test set, never seen during training)
+```
+
+<Info>
+The test set remains completely independent to provide unbiased performance evaluation.
+</Info>
+
+## Citation and Attribution
+
+### Dataset Citation
+
+```
+Kermany, Daniel; Zhang, Kang; Goldbaum, Michael (2018),
+"Labeled Optical Coherence Tomography (OCT) and Chest X-Ray Images for Classification",
+Mendeley Data, v2.
+http://dx.doi.org/10.17632/rscbjbr9sj.2
+```
+
+### Scientific Publication
+
+```
+Kermany DS, Goldbaum M, et al. (2018).
+"Identifying Medical Diagnoses and Treatable Diseases by Image-Based Deep Learning".
+Cell. 172(5):1122-1131.
+https://doi.org/10.1016/j.cell.2018.02.010
+```
+
+<Note>
+When using this dataset in your work, please provide proper attribution to respect the creators' contribution to open medical AI research.
+</Note>
+
+## Common Issues and Solutions
+
+<Accordion title="Download fails or times out">
+  **Solution**: Try the manual download option instead of the API. Large files can be interrupted on unstable connections.
+</Accordion>
+
+<Accordion title="Wrong number of images after extraction">
+  **Solution**: Re-download the dataset. The zip file may have been corrupted during download.
+</Accordion>
+
+<Accordion title="Permission denied when accessing kaggle.json">
+  **Solution**: On Linux/Mac, run `chmod 600 ~/.kaggle/kaggle.json` to set proper permissions.
+</Accordion>
+
+<Accordion title="Out of memory during training">
+  **Solution**: Reduce batch size in training configuration. The dataset is large, and 224×224 RGB images require significant memory.
+</Accordion>
+
+## Next Steps
+
+With the dataset downloaded and understood, you're ready to:
+
+1. **Verify the data** with the verification script
+2. **Explore the images** to understand the visual patterns
+3. **Train the model** using the prepared data pipeline
+4. **Evaluate results** on the test set
+
+The preprocessing pipeline in the code will handle all the technical details of loading and augmenting the data.

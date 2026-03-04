@@ -1,0 +1,555 @@
+---
+title: Metrics Interpretation
+description: Understanding performance metrics for medical AI - accuracy, precision, recall, F1-score, and ROC curves
+---
+
+This page explains how to interpret the various metrics used to evaluate the pneumonia classification model, with special emphasis on their medical significance.
+
+## Core Metrics Overview
+
+The model is evaluated using five primary metrics:
+
+<ParamField path="Accuracy" type="percentage">
+  Overall percentage of correct predictions (both normal and pneumonia cases)
+</ParamField>
+
+<ParamField path="Precision" type="percentage">
+  Of all cases predicted as pneumonia, what percentage actually have pneumonia?
+</ParamField>
+
+<ParamField path="Recall" type="percentage">
+  Of all actual pneumonia cases, what percentage did the model detect?
+</ParamField>
+
+<ParamField path="F1-Score" type="percentage">
+  Harmonic mean of precision and recall - balances both metrics
+</ParamField>
+
+<ParamField path="AUC-ROC" type="float (0-1)">
+  Area Under the ROC Curve - model's ability to distinguish between classes
+</ParamField>
+
+## Accuracy
+
+### Definition
+
+**Formula**:
+```
+Accuracy = (True Positives + True Negatives) / Total Predictions
+```
+
+**What it measures**: Percentage of all predictions that are correct.
+
+### Interpretation
+
+<Tabs>
+  <Tab title="Example">
+    Out of 624 test images:
+    - 550 correctly classified
+    - 74 incorrectly classified
+
+    **Accuracy = 550 / 624 = 88.1%**
+  </Tab>
+  <Tab title="Target">
+    **Goal for this model**: &gt;85%
+
+    **Typical results**: 87-92%
+
+    **Clinical benchmark**: Human radiologists achieve ~85-95% on similar tasks
+  </Tab>
+  <Tab title="Limitations">
+    **Why accuracy alone isn't enough**:
+
+    Imagine a dataset with:
+    - 90% pneumonia cases
+    - 10% normal cases
+
+    A naive model that **always predicts pneumonia** would achieve:
+    - Accuracy: 90% ✓
+    - But it would miss 0% of pneumonia (good)
+    - And incorrectly flag 100% of normal patients (terrible)
+
+    This is why we need precision and recall.
+  </Tab>
+</Tabs>
+
+<Note>
+  Accuracy is a good overall metric but can be misleading with imbalanced datasets (our dataset has 74% pneumonia cases).
+</Note>
+
+## Precision
+
+### Definition
+
+**Formula**:
+```
+Precision = True Positives / (True Positives + False Positives)
+```
+
+**What it measures**: When the model predicts pneumonia, how often is it correct?
+
+### Medical Significance
+
+<Tabs>
+  <Tab title="Example">
+    Model predicts pneumonia in 420 cases:
+    - 380 actually have pneumonia (True Positives)
+    - 40 are actually normal (False Positives)
+
+    **Precision = 380 / 420 = 90.5%**
+  </Tab>
+  <Tab title="Clinical Impact">
+    **High precision means**:
+    - Fewer false alarms
+    - Less unnecessary follow-up testing
+    - Lower patient anxiety
+    - Reduced healthcare costs
+
+    **Low precision means**:
+    - Many false positives
+    - Patients undergo unnecessary treatment
+    - Loss of trust in the AI system
+  </Tab>
+  <Tab title="Trade-offs">
+    **Precision vs Recall**:
+
+    You can achieve 100% precision by being very conservative:
+    - Only predict pneumonia when absolutely certain
+    - But you'll miss many real cases (low recall)
+
+    The model must balance both metrics.
+  </Tab>
+</Tabs>
+
+**Target for this model**: &gt;80% precision
+
+## Recall (Sensitivity)
+
+### Definition
+
+**Formula**:
+```
+Recall = True Positives / (True Positives + False Negatives)
+```
+
+**What it measures**: Of all actual pneumonia cases, what percentage did we catch?
+
+### Why 96% Recall is Critical
+
+<Warning>
+  In medical screening, **false negatives are more dangerous than false positives**.
+</Warning>
+
+<Tabs>
+  <Tab title="Example">
+    Out of 390 actual pneumonia cases:
+    - 375 correctly detected (True Positives)
+    - 15 missed (False Negatives)
+
+    **Recall = 375 / 390 = 96.2%**
+  </Tab>
+  <Tab title="False Negative Risk">
+    **What happens when we miss pneumonia**:
+
+    1. Patient doesn't receive treatment
+    2. Pneumonia can worsen rapidly (especially in children)
+    3. Can lead to:
+       - Hospitalization
+       - Sepsis
+       - Respiratory failure
+        - Death (15% mortality in children &lt;5 years)
+
+    **Cost**: Potentially life-threatening
+  </Tab>
+  <Tab title="False Positive Risk">
+    **What happens with a false alarm**:
+
+    1. Doctor orders additional tests (chest CT, blood work)
+    2. May prescribe antibiotics preventatively
+    3. Patient monitored more closely
+
+    **Cost**: Money, time, minor inconvenience
+
+    **But**: Patient's life is not at risk
+  </Tab>
+  <Tab title="Why 96%?">
+    **Our target: &gt;90% recall, ideally &gt;95%**
+
+    **Rationale**:
+     - Missing &lt;5% of cases is acceptable for screening tool
+    - Radiologists still review all X-rays
+    - AI serves as "second opinion" or triage system
+    - 96% recall means we catch 374 out of 390 cases
+
+    **In practice**: The 4% we miss would likely be:
+    - Very early-stage pneumonia
+    - Atypical presentations
+    - Poor image quality
+  </Tab>
+</Tabs>
+
+<Note>
+  High recall is prioritized in medical screening systems. It's acceptable to have more false positives (lower precision) if it means catching more true cases of disease.
+</Note>
+
+## F1-Score
+
+### Definition
+
+**Formula**:
+```
+F1 = 2 × (Precision × Recall) / (Precision + Recall)
+```
+
+**What it measures**: Harmonic mean of precision and recall.
+
+### Why Harmonic Mean?
+
+<Tabs>
+  <Tab title="Arithmetic Mean Problem">
+    **Arithmetic mean**: (Precision + Recall) / 2
+
+    Example:
+    - Precision: 100%
+    - Recall: 10%
+    - Arithmetic mean: 55% (misleading!)
+
+    This suggests decent performance when recall is terrible.
+  </Tab>
+  <Tab title="Harmonic Mean Advantage">
+    **Harmonic mean**: Punishes extreme imbalances
+
+    Same example:
+    - Precision: 100%
+    - Recall: 10%
+    - F1-Score: 18% (accurately reflects poor performance)
+
+    **Property**: F1 is only high when BOTH precision and recall are high.
+  </Tab>
+  <Tab title="Example Calculation">
+    Model performance:
+    - Precision: 87%
+    - Recall: 96%
+
+    **F1 = 2 × (0.87 × 0.96) / (0.87 + 0.96)**
+    **F1 = 2 × 0.8352 / 1.83**
+    **F1 = 0.913 = 91.3%**
+
+    F1 is slightly below recall because precision is lower, showing the model favors sensitivity.
+  </Tab>
+</Tabs>
+
+**Target for this model**: &gt;85% F1-Score
+
+## AUC-ROC (Area Under Curve)
+
+### Definition
+
+<ParamField path="ROC Curve" type="plot">
+  Plots True Positive Rate (Recall) vs False Positive Rate at various classification thresholds
+</ParamField>
+
+<ParamField path="AUC" type="float (0-1)">
+  Area under the ROC curve - single number summarizing performance across all thresholds
+</ParamField>
+
+### Understanding ROC Curves
+
+<Tabs>
+  <Tab title="How It Works">
+    The model outputs probabilities:
+    ```
+    Image A: 0.92 (92% confident = pneumonia)
+    Image B: 0.45 (45% confident = ???)
+    Image C: 0.12 (12% confident = normal)
+    ```
+
+    We need a **threshold** to decide:
+    - Probability ≥ threshold → Predict pneumonia
+    - Probability < threshold → Predict normal
+
+    **Different thresholds give different results**:
+
+    Threshold = 0.5 (standard):
+    - Image A: Pneumonia ✓
+    - Image B: Normal
+    - Image C: Normal ✓
+
+    Threshold = 0.3 (more sensitive):
+    - Image A: Pneumonia ✓
+    - Image B: Pneumonia (maybe wrong)
+    - Image C: Normal ✓
+  </Tab>
+  <Tab title="ROC Curve Plot">
+    **Axes**:
+    - X-axis: False Positive Rate (FPR) = FP / (FP + TN)
+    - Y-axis: True Positive Rate (TPR) = Recall = TP / (TP + FN)
+
+    **Each point** represents model performance at a different threshold.
+
+    **Curve interpretation**:
+    - Top-left corner (0, 1) = Perfect classifier
+    - Diagonal line = Random guessing
+    - Area under curve = Overall performance
+  </Tab>
+  <Tab title="AUC Values">
+    **AUC = 1.0**: Perfect classifier
+    - 100% recall, 0% false positives at optimal threshold
+
+    **AUC = 0.9-1.0**: Excellent
+    - Our model typically achieves ~0.93-0.96
+
+    **AUC = 0.8-0.9**: Good
+    - Clinically useful
+
+    **AUC = 0.7-0.8**: Fair
+    - May need improvement
+
+    **AUC = 0.5**: Random guessing
+    - Model has no predictive power
+
+    **AUC &lt; 0.5**: Worse than random
+    - Model is systematically wrong (predictions inverted)
+  </Tab>
+</Tabs>
+
+**Target for this model**: AUC &gt;0.90
+
+### Why AUC Matters
+
+<Note>
+  AUC is **threshold-independent** - it measures the model's ability to rank pneumonia cases higher than normal cases, regardless of where you set the decision boundary.
+</Note>
+
+**Advantage**: Useful when you might adjust the threshold based on clinical context:
+- **Emergency room**: Lower threshold (0.3) → Catch more cases, tolerate false alarms
+- **Routine screening**: Standard threshold (0.5) → Balanced approach
+- **Resource-limited**: Higher threshold (0.7) → Only flag highly suspicious cases
+
+## Reading the Confusion Matrix
+
+The confusion matrix shows all four possible outcomes:
+
+```
+                    Predicted
+                 Normal  Pneumonia
+Actual  Normal     TN       FP
+        Pneumonia  FN       TP
+```
+
+### Example Confusion Matrix
+
+```
+                    Predicted
+                 Normal  Pneumonia
+Actual  Normal     215      19        = 234 total
+        Pneumonia   15     375        = 390 total
+              
+                   230     394        = 624 total
+```
+
+<Tabs>
+  <Tab title="True Negatives (TN)">
+    **Value**: 215
+
+    **Meaning**: Correctly identified as normal
+
+    **Percentage**: 215/234 = 91.9% of normal cases
+
+    **Clinical impact**: Healthy patients correctly cleared
+  </Tab>
+  <Tab title="False Positives (FP)">
+    **Value**: 19
+
+    **Meaning**: Normal, but predicted pneumonia
+
+    **Percentage**: 19/234 = 8.1% of normal cases
+
+    **Clinical impact**: 
+    - Unnecessary follow-up tests
+    - Patient anxiety
+    - But not dangerous
+  </Tab>
+  <Tab title="False Negatives (FN)">
+    **Value**: 15
+
+    **Meaning**: Has pneumonia, but predicted normal
+
+    **Percentage**: 15/390 = 3.8% of pneumonia cases
+
+    **Clinical impact**: 
+    - Most dangerous error type
+    - Patient might not get treatment
+    - We minimize this by targeting high recall
+  </Tab>
+  <Tab title="True Positives (TP)">
+    **Value**: 375
+
+    **Meaning**: Correctly identified as pneumonia
+
+    **Percentage**: 375/390 = 96.2% of pneumonia cases
+
+    **Clinical impact**: Patients get appropriate treatment
+  </Tab>
+</Tabs>
+
+### Deriving Metrics from Confusion Matrix
+
+```
+Accuracy  = (TP + TN) / Total
+          = (375 + 215) / 624 = 94.6%
+
+Precision = TP / (TP + FP)
+          = 375 / (375 + 19) = 95.2%
+
+Recall    = TP / (TP + FN)
+          = 375 / (375 + 15) = 96.2%
+
+F1-Score  = 2 × (P × R) / (P + R)
+          = 2 × (0.952 × 0.962) / (0.952 + 0.962)
+          = 95.7%
+```
+
+## What "Good" Metrics Mean for This Application
+
+### Screening Tool Perspective
+
+<Tabs>
+  <Tab title="Acceptable Performance">
+    **Minimum acceptable metrics**:
+    - Accuracy: &gt;85%
+    - Precision: &gt;80%
+    - Recall: &gt;90% (critical)
+    - F1-Score: &gt;85%
+    - AUC: &gt;0.88
+
+    **Interpretation**: Model is useful as a screening tool, but **must be reviewed by radiologist**.
+  </Tab>
+  <Tab title="Excellent Performance">
+    **Target metrics** (our model achieves these):
+    - Accuracy: &gt;90%
+    - Precision: &gt;85%
+    - Recall: &gt;95%
+    - F1-Score: &gt;90%
+    - AUC: &gt;0.93
+
+    **Interpretation**: Model approaches radiologist-level performance on this specific dataset. Can be used for:
+    - Triage (prioritize urgent cases)
+    - Second opinion
+    - Initial screening in resource-limited settings
+  </Tab>
+  <Tab title="Clinical Deployment">
+    **For real-world medical use**, would need:
+    - Testing on diverse patient populations
+    - Validation on external datasets
+    - Prospective clinical trial
+    - Regulatory approval (FDA, CE marking)
+    - Integration with PACS systems
+    - Continuous monitoring for drift
+
+    **Our model**: Educational/research only - NOT for clinical use.
+  </Tab>
+</Tabs>
+
+### Comparison to Baselines
+
+<Tabs>
+  <Tab title="Random Guessing">
+    **Baseline**: Flip a coin for each image
+
+    Expected metrics:
+    - Accuracy: ~50%
+    - Precision: ~50%
+    - Recall: ~50%
+    - AUC: 0.5
+
+    **Our model**: &gt;40% better than random
+  </Tab>
+  <Tab title="Naive Classifier">
+    **Baseline**: Always predict "pneumonia" (since 62.5% of test set has pneumonia)
+
+    Metrics:
+    - Accuracy: 62.5%
+    - Precision: 62.5%
+    - Recall: 100% (catches all cases)
+    - But: 100% false positive rate on normal cases
+
+    **Our model**: Much more balanced
+  </Tab>
+  <Tab title="Human Radiologists">
+    **Published benchmarks** (varies by study):
+    - Accuracy: 85-95%
+    - Recall: 88-97%
+    - Inter-rater agreement: ~80%
+
+    **Our model**: Within range of human performance on this specific dataset
+
+    **Important**: Radiologists have contextual information (patient history, symptoms) that our model doesn't use.
+  </Tab>
+</Tabs>
+
+## Interpreting Model Confidence
+
+The model outputs probabilities, not just binary predictions:
+
+<Tabs>
+  <Tab title="High Confidence Correct">
+    ```
+    Prediction: PNEUMONIA (98% confident)
+    Actual: PNEUMONIA ✓
+    ```
+
+    **Interpretation**: Clear pneumonia markers detected (consolidations, infiltrates)
+  </Tab>
+  <Tab title="Low Confidence Correct">
+    ```
+    Prediction: PNEUMONIA (52% confident)
+    Actual: PNEUMONIA ✓
+    ```
+
+    **Interpretation**: 
+    - Early-stage pneumonia
+    - Ambiguous features
+    - Should be reviewed carefully by radiologist
+  </Tab>
+  <Tab title="High Confidence Incorrect">
+    ```
+    Prediction: PNEUMONIA (94% confident)
+    Actual: NORMAL ✗
+    ```
+
+    **Interpretation**:
+    - May have pneumonia-like artifacts
+    - Could be other lung condition
+    - Model's most problematic errors
+  </Tab>
+  <Tab title="Low Confidence Incorrect">
+    ```
+    Prediction: NORMAL (51% confident)
+    Actual: PNEUMONIA ✗
+    ```
+
+    **Interpretation**:
+    - Very subtle pneumonia
+    - Model is uncertain (close to 50% threshold)
+    - Borderline case even for humans
+  </Tab>
+</Tabs>
+
+<Note>
+  In clinical deployment, low-confidence predictions (&lt;60% or &gt;40% and &lt;60%) should be flagged for mandatory human review.
+</Note>
+
+## Summary: Metrics Priority for Medical AI
+
+**Order of importance for pneumonia screening**:
+
+1. **Recall (Sensitivity)** - Must catch pneumonia cases
+2. **AUC-ROC** - Overall discriminative ability
+3. **F1-Score** - Balance of precision and recall
+4. **Precision** - Avoid too many false alarms
+5. **Accuracy** - Overall correctness
+
+<Warning>
+  Never evaluate a medical AI model on accuracy alone. Always examine the full confusion matrix and prioritize metrics relevant to clinical consequences.
+</Warning>

@@ -1,0 +1,285 @@
+---
+title: Quick Start
+description: Get your pneumonia classification model running in under 1 hour with this step-by-step guide
+---
+
+Get your CNN model detecting pneumonia in chest X-rays within the next hour. This guide walks you through dataset setup, training, and evaluation with real metrics.
+
+<Note>
+**Prerequisites**: Python 3.8+, TensorFlow/Keras installed. The training takes 15-30 minutes on CPU, 5-10 minutes with GPU.
+</Note>
+
+## What You'll Build
+
+A Convolutional Neural Network that:
+- Classifies chest X-ray images as NORMAL or PNEUMONIA
+- Achieves 80-85% accuracy on test data
+- Reaches 96%+ sensitivity (catches most pneumonia cases)
+- Delivers 0.90-0.93 AUC-ROC score
+
+<Steps>
+
+<Step title="Download the Chest X-Ray Dataset">
+
+The model requires the Kaggle Chest X-Ray Pneumonia dataset (~1.15 GB, 5,863 images).
+
+**Get the dataset:**
+
+1. Visit [kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)
+2. Download `archive.zip` (requires free Kaggle account)
+3. Extract to your project's `data/` directory
+
+**Expected structure:**
+```
+proyectoia/
+└── data/
+    └── chest_xray/
+        ├── train/
+        │   ├── NORMAL/      [1,341 images]
+        │   └── PNEUMONIA/   [3,875 images]
+        └── test/
+            ├── NORMAL/      [234 images]
+            └── PNEUMONIA/   [390 images]
+```
+
+**Verify your setup:**
+```bash
+python verificar_dataset.py
+```
+
+<Warning>
+The dataset includes a `val/` folder with only 16 images. Don't use it - the code automatically creates a proper validation split from the training data.
+</Warning>
+
+</Step>
+
+<Step title="Train Your Model">
+
+Train the 3-layer CNN with data augmentation and early stopping.
+
+<CodeGroup>
+
+```bash Complete Training
+# Train and evaluate in one command
+python main.py all
+```
+
+```bash Training Only
+# Just train the model
+python main.py train
+```
+
+```bash With Pipenv
+# If using pipenv for dependencies
+pipenv run python main.py train
+```
+
+</CodeGroup>
+
+**What happens during training:**
+- 20 epochs maximum (early stopping may finish sooner)
+- Batch size: 32
+- Data augmentation: rotations (±15°), shifts (±10%), zoom (±10%)
+- Saves best model to `models/best_model.keras`
+- Generates training history graphs in `results/`
+
+**Training time:**
+- CPU: 15-30 minutes
+- GPU: 5-10 minutes
+
+<Note>
+If you encounter memory errors, edit `src/train.py` and reduce the `batch_size` from 32 to 16 or 8.
+</Note>
+
+</Step>
+
+<Step title="Evaluate Model Performance">
+
+Run comprehensive evaluation on the test set with clinical metrics.
+
+```bash
+python main.py evaluate
+```
+
+**Evaluation outputs:**
+
+The script generates four key visualizations in `results/`:
+
+- `training_history.png` - Loss and accuracy curves over epochs
+- `confusion_matrix.png` - True/false positives and negatives
+- `roc_curve.png` - ROC curve with AUC score
+- `predictions.png` - Sample predictions with ground truth
+
+**Expected metrics:**
+
+| Metric | Target | Clinical Meaning |
+|--------|--------|------------------|
+| Accuracy | 80-85% | Overall correctness |
+| Sensitivity (Recall) | >95% | Catches pneumonia cases |
+| Specificity | 70-80% | Identifies healthy cases |
+| AUC-ROC | 0.90-0.93 | Discrimination ability |
+
+<Note>
+**High sensitivity is critical** - missing a pneumonia case (false negative) is worse than a false alarm (false positive) in clinical screening.
+</Note>
+
+</Step>
+
+<Step title="Review Results and Next Steps">
+
+Check your model's performance and understand the outputs.
+
+**Review the confusion matrix** (`results/confusion_matrix.png`):
+- True Positives (TP): Correctly identified pneumonia
+- True Negatives (TN): Correctly identified normal
+- False Positives (FP): Healthy classified as pneumonia (acceptable for screening)
+- False Negatives (FN): Missed pneumonia cases (minimize these)
+
+**Typical results:**
+```
+Confusion Matrix:
+           Predicted
+           Normal  Pneumonia
+Actual
+Normal       180      54      (77% specificity)
+Pneumonia     15     375      (96% sensitivity)
+```
+
+**Understanding overfitting:**
+
+You may notice the training accuracy is higher than test accuracy. This is expected with medical imaging data. The model uses dropout (0.5) and data augmentation to minimize this.
+
+<Warning>
+This model is for **educational purposes only**. Never use it for actual clinical diagnosis without:
+- Validation by medical professionals
+- Regulatory approval
+- Integration into proper clinical workflows
+</Warning>
+
+**Next steps:**
+- Review `DISEÑO_MODELO.md` for architecture details
+- Check `src/model.py` for the CNN implementation
+- Read `PLANTEAMIENTO.md` for clinical context
+- Explore improvements: transfer learning, Grad-CAM visualization
+
+</Step>
+
+</Steps>
+
+## Quick Command Reference
+
+```bash
+# All-in-one: train and evaluate
+python main.py all
+
+# Individual steps
+python main.py train      # Train model only
+python main.py evaluate   # Evaluate existing model
+
+# View model architecture
+python src/model.py
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion title="Dataset not found error">
+```
+FileNotFoundError: data/chest_xray/
+```
+**Solution**: Download the dataset from Kaggle and extract to `data/chest_xray/`. Run `verificar_dataset.py` to confirm structure.
+</Accordion>
+
+<Accordion title="Out of memory error">
+```
+ResourceExhaustedError: OOM when allocating tensor
+```
+**Solution**: In `src/train.py`, find the line with `batch_size=32` and reduce to `16` or `8`.
+</Accordion>
+
+<Accordion title="Training is very slow">
+**Solution**: Normal on CPU. Expected time: 15-30 minutes. To speed up:
+- Use GPU if available
+- Reduce epochs in `src/train.py`
+- Reduce training data size (not recommended)
+</Accordion>
+
+<Accordion title="Model accuracy is low (<75%)">
+**Check these issues:**
+- Dataset structure is correct (run `verificar_dataset.py`)
+- Images are loading properly (check `src/data_loader.py` output)
+- Training completed at least 10 epochs
+- Class imbalance is being handled (weighted loss)
+</Accordion>
+
+</AccordionGroup>
+
+## Project Structure
+
+```
+proyectoia/
+├── data/                          # Dataset (download first)
+│   └── chest_xray/
+│       ├── train/
+│       └── test/
+├── models/                        # Trained models
+│   ├── best_model.keras          # Best validation model
+│   └── final_model.keras         # Final epoch model
+├── results/                       # Generated visualizations
+│   ├── training_history.png
+│   ├── confusion_matrix.png
+│   ├── roc_curve.png
+│   └── predictions.png
+├── src/                          # Source code
+│   ├── model.py                  # CNN architecture
+│   ├── data_loader.py            # Data loading & augmentation
+│   ├── train.py                  # Training script
+│   └── evaluate.py               # Evaluation script
+├── main.py                        # Main entry point
+├── verificar_dataset.py          # Dataset verification
+├── PLANTEAMIENTO.md              # Problem definition
+├── DISEÑO_MODELO.md              # Architecture design
+└── GUIA_COMPLETA.md              # Complete guide
+```
+
+## Dataset Details
+
+- **Source**: Kaggle - Chest X-Ray Images (Pneumonia)
+- **Author**: Paul Mooney
+- **Size**: 5,863 pediatric chest X-rays (ages 1-5)
+- **License**: CC BY 4.0
+- **Classes**: NORMAL (1,575 images) and PNEUMONIA (4,265 images)
+- **Split**: 89% train, 11% test
+
+The images come from Guangzhou Women and Children's Medical Center and have been anonymized for research use.
+
+## CNN Architecture
+
+```
+Input: 224×224×3 RGB images
+    ↓
+Conv2D: 32 filters, 3×3, ReLU
+MaxPooling: 2×2
+    ↓
+Conv2D: 64 filters, 3×3, ReLU
+MaxPooling: 2×2
+    ↓
+Conv2D: 128 filters, 3×3, ReLU
+MaxPooling: 2×2
+    ↓
+Flatten
+Dense: 128 units, ReLU
+Dropout: 0.5
+Dense: 2 units, Softmax
+    ↓
+Output: [NORMAL, PNEUMONIA]
+```
+
+**Optimizer**: Adam (learning rate: 0.001)  
+**Loss**: Categorical Crossentropy  
+**Regularization**: Dropout + Data Augmentation
+
+---
+
+You're now ready to train and evaluate a pneumonia classification model. For detailed architecture explanation, see `DISEÑO_MODELO.md`. For clinical context, read `PLANTEAMIENTO.md`.

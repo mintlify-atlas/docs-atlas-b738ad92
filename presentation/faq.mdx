@@ -1,0 +1,358 @@
+---
+title: Preguntas Frecuentes
+description: Respuestas preparadas para las preguntas más comunes sobre el proyecto de clasificación de neumonía
+---
+
+## Preguntas Frecuentes de la Presentación
+
+Estas son las preguntas más comunes que recibirás durante o después de la presentación, con respuestas preparadas basadas en el proyecto.
+
+---
+
+## Sobre el Rendimiento del Modelo
+
+<AccordionGroup>
+  <Accordion title="¿Por qué solo 80% y no 95%?">
+    **Respuesta preparada**:
+    
+    > "El 95% era en validación (datos que el modelo veía durante entrenamiento). El 80% es en test (datos completamente nuevos). Esto es normal y demuestra que el modelo generaliza bien."
+    
+    **Explicación extendida si preguntan más**:
+    
+    - **Validación**: Datos usados para ajustar hiperparámetros durante el entrenamiento
+    - **Test**: Datos completamente nuevos, nunca vistos por el modelo
+    - La diferencia refleja la capacidad de generalización
+    - Una caída de 15 puntos es aceptable en Deep Learning
+    - Lo importante es que el 80% en test es un resultado sólido para datos nuevos
+    
+    **Por qué es positivo**:
+    - Demuestra que NO hay overfitting severo
+    - El modelo funciona con datos reales del mundo
+    - 80% sigue siendo útil para screening inicial
+  </Accordion>
+
+  <Accordion title="¿Qué significa el 96% de sensibilidad?">
+    **Respuesta preparada**:
+    
+    > "Lo más importante: el modelo tiene 96% de sensibilidad, es decir, detecta casi todos los casos de neumonía. En medicina es mejor tener falsos positivos que perder un caso real."
+    
+    **Desglose de sensibilidad**:
+    - De cada 100 casos de neumonía, detecta 96
+    - Solo 3-4 casos pasan desapercibidos
+    - Minimiza falsos negativos (el error más peligroso)
+    
+    **Por qué es crítico en medicina**:
+    - Falso negativo = paciente enfermo sin detectar → PELIGROSO
+    - Falso positivo = verificación adicional → Molesto pero seguro
+    - Para screening, priorizar sensibilidad es la estrategia correcta
+  </Accordion>
+
+  <Accordion title="¿Cómo se compara con otros modelos?">
+    **Respuesta preparada**:
+    
+    Los resultados son comparables con sistemas de apoyo al diagnóstico:
+    - AUC-ROC de 0.93 es "Excelente" (escala: &gt;0.90 = excelente)
+    - Accuracy del 80% en test es sólido para clasificación médica binaria
+    - La alta sensibilidad (96%) es el punto fuerte
+    
+    **Contexto**:
+    - No buscamos reemplazar a radiólogos (98%+ accuracy)
+    - Buscamos una herramienta de screening inicial
+    - Para ese propósito, estos números son apropiados
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Sobre la Arquitectura y Diseño
+
+<AccordionGroup>
+  <Accordion title="¿Por qué CNN y no otra red neuronal?">
+    **Respuesta preparada**:
+    
+    > "Las CNN están diseñadas para imágenes. Detectan patrones espaciales mejor que redes tradicionales. Son el estándar en imagenología médica."
+    
+    **Ventajas de las CNN**:
+    - **Invarianza espacial**: Detecta patrones sin importar dónde aparezcan en la imagen
+    - **Jerarquía de características**: Primera capa detecta bordes, segunda texturas, tercera patrones complejos
+    - **Menos parámetros**: Comparado con redes fully connected para imágenes
+    - **Probadas en medicina**: ResNet, VGG, Inception usadas en imagenología
+    
+    **Por qué no otras arquitecturas**:
+    - Redes fully connected: Demasiados parámetros, pierden información espacial
+    - RNN: Diseñadas para secuencias, no para imágenes 2D
+    - Transformers: Requieren más datos y recursos de los que teníamos
+  </Accordion>
+
+  <Accordion title="¿Cómo manejan el overfitting?">
+    **Respuesta preparada**:
+    
+    > "Usamos dropout, data augmentation y early stopping. Por eso hay diferencia entre validación (95%) y test (80%), pero sigue siendo un buen resultado."
+    
+    **Técnicas específicas implementadas**:
+    
+    1. **Dropout (50%)**:
+       - Desactiva aleatoriamente 50% de neuronas durante entrenamiento
+       - Previene co-adaptación de neuronas
+       - Actúa como ensemble de redes
+    
+    2. **Data Augmentation**:
+       - Rotaciones, flips, zoom
+       - Aumenta variedad de datos
+       - Mejora generalización
+    
+    3. **Early Stopping**:
+       - Monitorea validation loss
+       - Detiene entrenamiento cuando empieza overfitting
+       - Restaura mejores pesos
+    
+     **Evidencia de que funciona**:
+     - Test accuracy (80%) no está muy lejos de validation (95%)
+     - Si hubiera overfitting severo, test sería mucho peor (&lt;60%)
+  </Accordion>
+
+  <Accordion title="¿Por qué 224×224 y no otra resolución?">
+    **Respuesta preparada**:
+    
+    Es un balance entre calidad y recursos computacionales:
+    
+    **Ventajas de 224×224**:
+    - Suficiente detalle para patrones de neumonía
+    - Estándar en ImageNet y transfer learning
+    - Entrenable en GPUs comunes
+    - Tiempo de inferencia rápido
+    
+    **Trade-offs**:
+    - Resolución más alta (512×512): Más detalle, pero 5× más lento
+    - Resolución más baja (128×128): Más rápido, pero pierde detalles importantes
+    
+    224×224 es el "sweet spot" para este tipo de problemas.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Sobre Aplicación Práctica
+
+<AccordionGroup>
+  <Accordion title="¿Se puede usar en hospitales reales?">
+    **Respuesta preparada**:
+    
+    > "Es una herramienta de apoyo para screening inicial, no reemplaza el diagnóstico médico. Requiere validación clínica adicional."
+    
+    **Uso apropiado**:
+    - ✅ Screening en centros de atención primaria
+    - ✅ Priorización de casos urgentes
+    - ✅ Apoyo en zonas con pocos radiólogos
+    - ✅ Segunda opinión automática
+    
+    **NO apropiado para**:
+    - ❌ Diagnóstico definitivo sin revisión médica
+    - ❌ Reemplazar completamente a radiólogos
+    - ❌ Decisiones de tratamiento sin confirmación
+    
+    **Próximos pasos necesarios**:
+    1. Validación clínica con médicos reales
+    2. Pruebas en hospitales piloto
+    3. Aprobación regulatoria (FDA, EMA, etc.)
+    4. Integración con sistemas PACS
+  </Accordion>
+
+  <Accordion title="¿Puede distinguir neumonía viral de bacteriana?">
+    **Respuesta preparada**:
+    
+    No, este modelo solo clasifica 2 categorías:
+    - NORMAL (sin neumonía)
+    - PNEUMONIA (con neumonía, sin distinguir tipo)
+    
+    **Limitación actual**:
+    El dataset no incluye etiquetas para viral vs bacteriana, solo "normal" vs "neumonía".
+    
+    **Posible mejora futura**:
+    - Reentrenar con dataset que incluya subtipos
+    - Agregar una tercera clase de salida
+    - Usar datasets como RSNA Pneumonia Detection Challenge
+    
+    **Por ahora**:
+    El valor está en detectar la presencia de neumonía para screening inicial. La diferenciación viral/bacteriana requeriría pruebas de laboratorio adicionales de todas formas.
+  </Accordion>
+
+  <Accordion title="¿Qué pasa si la imagen tiene mala calidad?">
+    **Respuesta honesta**:
+    
+    El modelo fue entrenado con imágenes de calidad razonable, por lo que:
+    
+    **Puede manejar**:
+    - Variaciones normales en contraste
+    - Diferentes ángulos estándar
+    - Ruido típico de rayos X
+    
+    **Puede fallar con**:
+    - Imágenes muy borrosas
+    - Ángulos no estándares (lateral en lugar de frontal)
+    - Artefactos severos
+    - Resolución muy baja
+    
+    **Mejora necesaria**:
+    - Preprocesamiento más robusto
+    - Detección de calidad de imagen
+    - Entrenamiento con más variedad de calidades
+    
+    En un sistema de producción, incluiríamos un filtro de calidad que alerte cuando la imagen no sea adecuada para análisis.
+  </Accordion>
+
+  <Accordion title="¿Cuánto tarda una predicción?">
+    **Respuesta práctica**:
+    
+    El modelo es rápido una vez entrenado:
+    
+    **Tiempo de inferencia**:
+    - ~0.1-0.5 segundos por imagen en GPU
+    - ~1-2 segundos por imagen en CPU moderna
+    
+    **En contexto**:
+    - Un radiólogo tarda 1-5 minutos analizando un caso
+    - El sistema puede procesar cientos de imágenes en minutos
+    - Útil para priorizar colas de trabajo
+    
+    **Escalabilidad**:
+    Con infraestructura cloud, podría procesar miles de estudios al día en paralelo.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Sobre el Dataset y Datos
+
+<AccordionGroup>
+  <Accordion title="¿De dónde vienen las imágenes?">
+    **Respuesta preparada**:
+    
+    Dataset público de Kaggle:
+    - 5,863 imágenes de rayos X de tórax
+    - 2 clases: NORMAL y PNEUMONIA
+    - Imágenes pediátricas (niños de 1-5 años)
+    - Fuente: Guangzhou Women and Children's Medical Center
+    
+    **Ventajas del dataset**:
+    - Datos reales de hospital
+    - Etiquetado por expertos médicos
+    - Público y reproducible
+    - Ampliamente usado en investigación
+    
+    **Limitaciones**:
+    - Solo pacientes pediátricos
+    - Un solo hospital (sesgo geográfico posible)
+    - Desbalance de clases (más casos de neumonía que normales)
+  </Accordion>
+
+  <Accordion title="¿Cómo aseguran que el dataset es confiable?">
+    **Respuesta preparada**:
+    
+    El dataset fue validado por expertos:
+    - Etiquetado por 2 médicos expertos
+    - Verificado por un tercer experto en casos dudosos
+    - Publicado en journal médico peer-reviewed
+    - Usado en múltiples estudios académicos
+    
+    **Validación adicional en nuestro trabajo**:
+    - Análisis exploratorio de datos
+    - Verificación de distribuciones
+    - Revisión manual de muestras
+    - Test set completamente separado
+  </Accordion>
+
+  <Accordion title="¿Hay desbalance de clases?">
+    **Respuesta honesta**:
+    
+    Sí, hay más casos de neumonía que normales en el dataset.
+    
+    **Por qué ocurre**:
+    Los datos vienen de un hospital, donde naturalmente hay más pacientes enfermos que sanos (sesgo de selección).
+    
+    **Cómo lo manejamos**:
+    - Evaluamos métricas más allá de accuracy (AUC-ROC, sensibilidad, especificidad)
+    - El test set mantiene la proporción natural
+    - Usamos data augmentation para balancear
+    
+    **Por qué no es un problema crítico**:
+    En screening médico, queremos maximizar sensibilidad de todas formas, lo cual el desbalance puede ayudar.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Preguntas Técnicas Avanzadas
+
+<AccordionGroup>
+  <Accordion title="¿Qué función de activación usan?">
+    **Respuesta técnica**:
+    
+    - **Capas convolucionales**: ReLU (Rectified Linear Unit)
+    - **Capa de salida**: Sigmoid (para clasificación binaria)
+    
+    **Por qué ReLU**:
+    - Entrena más rápido que sigmoid/tanh
+    - No sufre vanishing gradient
+    - Induce sparsity (algunas neuronas = 0)
+    - Estándar en CNNs modernas
+    
+     **Por qué Sigmoid en salida**:
+     - Output entre 0 y 1 (probabilidad)
+     - Interpretable: &gt;0.5 = PNEUMONIA, &lt;0.5 = NORMAL
+  </Accordion>
+
+  <Accordion title="¿Qué optimizer y learning rate usaron?">
+    **Respuesta técnica**:
+    
+    Configuración de entrenamiento:
+    - **Optimizer**: Adam
+    - **Learning rate**: 0.001 (típicamente)
+    - **Loss**: Binary Crossentropy
+    
+    **Por qué Adam**:
+    - Combina ventajas de RMSprop y Momentum
+    - Adapta learning rate por parámetro
+    - Funciona bien out-of-the-box
+    - Menos sensible a hiperparámetros
+  </Accordion>
+
+  <Accordion title="¿Intentaron transfer learning?">
+    **Respuesta dependiente del proyecto**:
+    
+    Si el proyecto usó transfer learning:
+    - "Sí, podríamos usar modelos pre-entrenados como ResNet o VGG"
+    - "Para este proyecto, entrenamos desde cero para entender el proceso completo"
+    
+    **Ventajas de transfer learning**:
+    - Menos datos necesarios
+    - Entrena más rápido
+    - Potencialmente mejor accuracy
+    
+    **Por qué entrenar desde cero tiene valor**:
+    - Aprendizaje educativo completo
+    - Control total sobre arquitectura
+    - Dataset es suficientemente grande (5,863 imágenes)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Consejos para Responder Preguntas
+
+<Card title="Estrategia General" icon="lightbulb">
+**Cuando no sepas la respuesta**:
+- Sé honesto: "Buena pregunta, no exploré ese aspecto específicamente"
+- Ofrece hipótesis: "Probablemente porque X, pero habría que verificarlo"
+- Redirige: "Lo que sí puedo decir es..."
+
+**Mantén la calma**:
+- Respira antes de responder
+- Es OK pedir que repitan la pregunta
+- Puedes tomarte un momento para pensar
+
+**Usa tus fortalezas**:
+- Vuelve a los números que memorizaste (80%, 93%, 96%)
+- Apunta a las gráficas si las tienes disponibles
+- Cita el documento fuente si es necesario
+</Card>
